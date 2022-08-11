@@ -1,124 +1,10 @@
+import cuid from "cuid";
 import type { NextPage } from "next";
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 
 const Home: NextPage = () => {
   const [reminders, setReminders] = useState<Reminder[]>([
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
-    {
-      id: "IDENTIFIER",
-      enabled: true,
-      timestamp: new Date(10000000),
-    },
   ]);
 
   const changeReminder = (newReminder: Reminder) => {
@@ -127,6 +13,10 @@ const Home: NextPage = () => {
         return reminder.id === newReminder.id ? newReminder : reminder;
       });
     });
+  };
+
+  const addReminder = (newReminder: Reminder) => {
+    setReminders((reminders) => [...reminders, newReminder]);
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -159,7 +49,10 @@ const Home: NextPage = () => {
       </div>
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <ModalContent
-          onConfirm={changeReminder}
+          onConfirm={(newReminder: Reminder) => {
+            addReminder(newReminder);
+            setIsModalOpen(false);
+          }}
           onCancel={() => setIsModalOpen(false)}
         />
       </Modal>
@@ -250,14 +143,53 @@ const ModalContent: React.FC<{
   onConfirm: (newReminder: Reminder) => void;
   onCancel: () => void;
 }> = (props) => {
+  const hours = useRef(0);
+  const minutes = useRef(0);
+
+  const createReminder = () => {
+    const timestamp = new Date();
+
+    timestamp.setHours(hours.current);
+    timestamp.setMinutes(minutes.current);
+    timestamp.setSeconds(0);
+
+    props.onConfirm({
+      enabled: true,
+      id: cuid(),
+      timestamp,
+    });
+  };
+
   return (
-    <div className="bg-white w-[calc(100vw_-_4rem)] p-4 rounded-xl inset-0 m-auto">
-      <TimeUnitPicker />
+    <div className="bg-white w-[calc(100vw_-_4rem)] p-8 rounded-xl inset-0 m-auto">
+      <div className="relative flex w-full items-stretch">
+        <TimeUnitPicker unitsCount={24} currentUnitRef={hours} />
+        <div className="absolute h-full w-px bg-gray-400 inset-0 m-auto"></div>
+        <TimeUnitPicker unitsCount={60} currentUnitRef={minutes} />
+      </div>
+      <div className="h-8"></div>
+      <div className="flex w-full gap-8">
+        <button
+          className="w-full rounded-md border border-sky-500 p-2"
+          onClick={createReminder}
+        >
+          Confirm
+        </button>
+        <button
+          className="w-full rounded-md border border-sky-500 p-2"
+          onClick={props.onCancel}
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   );
 };
 
-const TimeUnitPicker = () => {
+const TimeUnitPicker: React.FC<{
+  unitsCount: number;
+  currentUnitRef: React.MutableRefObject<number>;
+}> = (props) => {
   const scrollLine = useRef<HTMLDivElement | null>(null);
 
   const isDragging = useRef(false); // Whether the touch is in contact
@@ -267,7 +199,7 @@ const TimeUnitPicker = () => {
   const speedY = useRef(0); // Speed at which the line is moving
 
   const getCellSize = () => {
-    return scrollLine.current!.clientHeight / 60;
+    return scrollLine.current!.clientHeight / props.unitsCount;
   };
 
   /**
@@ -330,8 +262,14 @@ const TimeUnitPicker = () => {
       const friction = 0.1;
       const deceleration = Math.sign(speedY.current) * friction;
 
+      // Highest allowed scroll is when the first element is in the middle
+      // To acheive this, scroll has to be at negative-first element
       const outOfBoundsHigh = scrollY.current < -getCellSize();
-      const outOfBoundsLow = scrollY.current > getCellSize() * 58;
+
+      // Lowest allowed scroll is when the last element is in the middle
+      // To acheive this, scroll has to be at the element before the last one
+      const outOfBoundsLow =
+        scrollY.current > getCellSize() * (props.unitsCount - 2);
 
       if (outOfBoundsHigh || outOfBoundsLow) {
         // Push back handler.
@@ -340,7 +278,9 @@ const TimeUnitPicker = () => {
         // Accelerate toward the expected speed when slowing down,
         // use the expected speed when speeding back to the first in-bounds cell.
 
-        const firstInBoundsCell = getCellPosition(outOfBoundsHigh ? 0 : 59);
+        const firstInBoundsCell = getCellPosition(
+          outOfBoundsHigh ? 0 : props.unitsCount - 1
+        );
         const vectorToBoundary = firstInBoundsCell - scrollY.current;
 
         const expectedSpeed = vectorToBoundary * 0.05;
@@ -391,6 +331,11 @@ const TimeUnitPicker = () => {
 
     scrollY.current += speedY.current;
 
+    props.currentUnitRef.current = Math.min(
+      Math.max(getClosestCell(scrollY.current), 0),
+      props.unitsCount - 1
+    );
+
     scrollLine.current!.style.transform = `translateY(${-scrollY.current}px)`;
 
     requestAnimationFrame(animate);
@@ -423,7 +368,7 @@ const TimeUnitPicker = () => {
   });
 
   return (
-    <div className="relative w-12 h-24 overflow-hidden">
+    <div className="relative w-full h-48 overflow-hidden">
       <div
         className="flex flex-col"
         onTouchStart={startDrag}
@@ -431,11 +376,11 @@ const TimeUnitPicker = () => {
         onTouchCancel={stopDrag}
         ref={scrollLine}
       >
-        {new Array(60).fill(null).map((_, index) => {
+        {new Array(props.unitsCount).fill(null).map((_, index) => {
           return (
             <div
               key={index}
-              className="relative w-12 h-8 flex justify-center items-center text-2xl select-none"
+              className="relative w-full h-16 flex justify-center items-center text-5xl select-none"
             >
               {index}
             </div>
