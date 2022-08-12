@@ -5,8 +5,13 @@ import { useState } from "react";
 import { Modal } from "@/components/Modal";
 import { ModalContent } from "@/components/ModalContent";
 import { ReminderComponent } from "@/components/ReminderComponent";
+import { useSession } from 'next-auth/react';
 
 const Home: NextPage = () => {
+  const { data } = trpc.useQuery(["getReminders"]);
+  const session = useSession();
+  console.log(data, session);
+
   const [reminders, setReminders] = useState<Reminder[]>([]);
 
   const changeReminder = (newReminder: Reminder) => {
