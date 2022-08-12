@@ -1,9 +1,13 @@
+import { trpc } from '@/utils/trpc';
 import cuid from "cuid";
 import type { NextPage } from "next";
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
 
 const Home: NextPage = () => {
+  const { data } = trpc.useQuery(["getReminders"]);
+  console.log(data);
+
   const [reminders, setReminders] = useState<Reminder[]>([
   ]);
 
