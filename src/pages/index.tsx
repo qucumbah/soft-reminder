@@ -38,7 +38,7 @@ const Home: NextPage = () => {
         <header className="fixed w-full bg-white h-14 flex justify-center items-center">
           <span className="bold text-xl">Current reminders</span>
         </header>
-        <SyncIndicator isOnline={isOnline} isSyncing={reminders.length !== 0} />
+        {/* <SyncIndicator isOnline={isOnline} isSyncing={reminders.length !== 0} /> */}
         <div className="px-6 pt-14 flex flex-col">
           {reminders.map((reminder) => (
             <ReminderComponent

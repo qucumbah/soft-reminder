@@ -26,7 +26,7 @@ export const ModalContent: React.FC<{
   };
 
   return (
-    <div className="bg-white w-[calc(100vw_-_4rem)] p-8 rounded-xl inset-0 m-auto">
+    <>
       <div className="relative flex w-full items-stretch">
         <TimeUnitPicker unitsCount={24} currentUnitRef={hours} />
         <div className="absolute h-full w-px bg-gray-400 inset-0 m-auto"></div>
@@ -47,6 +47,6 @@ export const ModalContent: React.FC<{
           Cancel
         </button>
       </div>
-    </div>
+    </>
   );
 };

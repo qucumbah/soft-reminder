@@ -43,7 +43,9 @@ export const Modal: React.FC<{
           className="bg-transparent"
           onClick={(event) => event.stopPropagation()}
         >
-          {props.children}
+          <div className="bg-white w-[calc(100vw_-_4rem)] p-8 rounded-xl inset-0 m-auto">
+            {props.children}
+          </div>
         </div>
       </dialog>
     </div>
