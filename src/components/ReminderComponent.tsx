@@ -1,14 +1,16 @@
 import * as React from "react";
-import { Reminder } from "./index";
+import { Reminder } from "@/pages/index";
 
 export const ReminderComponent: React.FC<{
   reminder: Reminder;
+  openReminderEditDialogue: () => void;
   changeReminder: (newReminder: Reminder) => void;
 }> = (props) => {
   const padTime = (time: number) => time.toString().padStart(2, "0");
   return (
     <button
       key={props.reminder.id}
+      onClick={props.openReminderEditDialogue}
       className="h-[5rem] flex justify-between items-center"
     >
       <span

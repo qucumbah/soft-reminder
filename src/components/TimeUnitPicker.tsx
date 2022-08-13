@@ -53,11 +53,32 @@ export const TimeUnitPicker: React.FC<{
     const stepsUntilStop = Math.ceil(startSpeed / deceleration);
     const finalSpeed = startSpeed - deceleration * stepsUntilStop;
 
-    const distanceLeftToTravel = (stepsUntilStop * (startSpeed + finalSpeed)) / 2;
+    const distanceLeftToTravel =
+      (stepsUntilStop * (startSpeed + finalSpeed)) / 2;
     const finalPosition = scrollY + distanceLeftToTravel;
 
     return finalPosition;
   };
+
+  /**
+   * Updates the position of the scroll line and updates current cell value.
+   * @param newScrollY new scroll for the line.
+   */
+  const updateScrollLinePosition = (newScrollY: number) => {
+    scrollY.current = newScrollY;
+
+    props.currentUnitRef.current = Math.min(
+      Math.max(getClosestCell(newScrollY), 0),
+      props.unitsCount - 1
+    );
+
+    scrollLine.current!.style.transform = `translateY(${-newScrollY}px)`;
+  };
+
+  React.useLayoutEffect(
+    () => updateScrollLinePosition(getCellPosition(props.initialUnit)),
+    []
+  );
 
   const animate = () => {
     if (!scrollLine.current) {
@@ -65,7 +86,7 @@ export const TimeUnitPicker: React.FC<{
       // We need to stop it in this case.
       return;
     }
-    
+
     if (isDragging.current) {
       if (Math.abs(touchOriginOffsetY.current) < 0.1) {
         speedY.current = 0;
@@ -88,7 +109,8 @@ export const TimeUnitPicker: React.FC<{
 
       // Lowest allowed scroll is when the last element is in the middle
       // To acheive this, scroll has to be at the element before the last one
-      const outOfBoundsLow = scrollY.current > getCellSize() * (props.unitsCount - 2);
+      const outOfBoundsLow =
+        scrollY.current > getCellSize() * (props.unitsCount - 2);
 
       if (outOfBoundsHigh || outOfBoundsLow) {
         // Push back handler.
@@ -127,7 +149,8 @@ export const TimeUnitPicker: React.FC<{
           const stepsUntilStop = Math.ceil(startSpeed / deceleration);
           const finalSpeed = startSpeed - deceleration * stepsUntilStop;
 
-          const distanceLeftToTravel = (stepsUntilStop * (startSpeed + finalSpeed)) / 2;
+          const distanceLeftToTravel =
+            (stepsUntilStop * (startSpeed + finalSpeed)) / 2;
           const finalPosition = scrollY.current + distanceLeftToTravel;
 
           const finalCell = getClosestCell(
@@ -145,14 +168,7 @@ export const TimeUnitPicker: React.FC<{
       return;
     }
 
-    scrollY.current += speedY.current;
-
-    props.currentUnitRef.current = Math.min(
-      Math.max(getClosestCell(scrollY.current), 0),
-      props.unitsCount - 1
-    );
-
-    scrollLine.current!.style.transform = `translateY(${-scrollY.current}px)`;
+    updateScrollLinePosition(scrollY.current + speedY.current);
 
     requestAnimationFrame(animate);
   };
