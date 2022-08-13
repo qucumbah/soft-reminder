@@ -5,7 +5,9 @@ import { useState } from "react";
 import { Modal } from "@/components/Modal";
 import { ModalContent } from "@/components/ModalContent";
 import { ReminderComponent } from "@/components/ReminderComponent";
-import { useSession } from 'next-auth/react';
+import { useSession } from "next-auth/react";
+import SyncIndicator from "@/components/SyncIndicator";
+import useOnline from "@/hooks/useOnline";
 
 const Home: NextPage = () => {
   const { data } = trpc.useQuery(["getReminders"]);
@@ -13,6 +15,8 @@ const Home: NextPage = () => {
   console.log(data, session);
 
   const [reminders, setReminders] = useState<Reminder[]>([]);
+
+  const isOnline = useOnline();
 
   const changeReminder = (newReminder: Reminder) => {
     setReminders((reminders) => {
@@ -34,6 +38,7 @@ const Home: NextPage = () => {
         <header className="fixed w-full bg-white h-14 flex justify-center items-center">
           <span className="bold text-xl">Current reminders</span>
         </header>
+        <SyncIndicator isOnline={isOnline} isSyncing={reminders.length !== 0} />
         <div className="px-6 pt-14 flex flex-col">
           {reminders.map((reminder) => (
             <ReminderComponent
