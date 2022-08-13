@@ -1,9 +1,9 @@
 import * as React from "react";
 import { useEffect, useRef } from "react";
 
-
 export const TimeUnitPicker: React.FC<{
   unitsCount: number;
+  initialUnit: number;
   currentUnitRef: React.MutableRefObject<number>;
 }> = (props) => {
   const scrollLine = useRef<HTMLDivElement | null>(null);
@@ -60,6 +60,12 @@ export const TimeUnitPicker: React.FC<{
   };
 
   const animate = () => {
+    if (!scrollLine.current) {
+      // This function may run right after the component is unmounted.
+      // We need to stop it in this case.
+      return;
+    }
+    
     if (isDragging.current) {
       if (Math.abs(touchOriginOffsetY.current) < 0.1) {
         speedY.current = 0;
