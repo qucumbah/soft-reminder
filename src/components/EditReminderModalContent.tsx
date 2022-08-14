@@ -1,49 +1,51 @@
-import * as React from "react";
-import { useRef } from "react";
+import { useEffect, useState } from "react";
 import { Reminder } from "@/pages/index";
 import { TimeUnitPicker } from "./TimeUnitPicker";
 
 export const EditReminderModalContent: React.FC<{
   reminder: Reminder;
-  onConfirm: (newReminder: Reminder) => void;
+  onChange: (newReminder: Reminder) => void;
+  onConfirm: () => void;
   onCancel: () => void;
 }> = (props) => {
-  const hours = useRef(0);
-  const minutes = useRef(0);
+  const [hours, setHours] = useState(props.reminder.timestamp.getHours());
+  const [minutes, setMinutes] = useState(props.reminder.timestamp.getMinutes());
 
-  const confirmChange = () => {
+  const changeTime = (hours: number, minutes: number) => {
     const timestamp = new Date();
 
-    timestamp.setHours(hours.current);
-    timestamp.setMinutes(minutes.current);
+    timestamp.setHours(hours);
+    timestamp.setMinutes(minutes);
     timestamp.setSeconds(0);
 
-    props.onConfirm({
+    props.onChange({
       ...props.reminder,
       timestamp,
     });
   };
+
+  useEffect(() => changeTime(hours, minutes), [hours, minutes]);
 
   return (
     <>
       <div className="relative flex w-full items-stretch">
         <TimeUnitPicker
           unitsCount={24}
-          initialUnit={props.reminder.timestamp.getHours()}
-          currentUnitRef={hours}
+          currentUnit={hours}
+          setCurrentUnit={setHours}
         />
         <div className="absolute h-full w-px bg-gray-400 inset-0 m-auto"></div>
         <TimeUnitPicker
           unitsCount={60}
-          initialUnit={props.reminder.timestamp.getMinutes()}
-          currentUnitRef={minutes}
+          currentUnit={minutes}
+          setCurrentUnit={setMinutes}
         />
       </div>
       <div className="h-8"></div>
       <div className="flex w-full gap-8">
         <button
           className="w-full rounded-md border border-sky-500 p-2"
-          onClick={confirmChange}
+          onClick={props.onConfirm}
         >
           Confirm
         </button>

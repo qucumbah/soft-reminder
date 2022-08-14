@@ -3,8 +3,8 @@ import { useEffect, useRef } from "react";
 
 export const TimeUnitPicker: React.FC<{
   unitsCount: number;
-  initialUnit: number;
-  currentUnitRef: React.MutableRefObject<number>;
+  currentUnit: number;
+  setCurrentUnit: (newUnit: number) => void;
 }> = (props) => {
   const scrollLine = useRef<HTMLDivElement | null>(null);
 
@@ -67,16 +67,15 @@ export const TimeUnitPicker: React.FC<{
   const updateScrollLinePosition = (newScrollY: number) => {
     scrollY.current = newScrollY;
 
-    props.currentUnitRef.current = Math.min(
-      Math.max(getClosestCell(newScrollY), 0),
-      props.unitsCount - 1
+    props.setCurrentUnit(
+      Math.min(Math.max(getClosestCell(newScrollY), 0), props.unitsCount - 1)
     );
 
     scrollLine.current!.style.transform = `translateY(${-newScrollY}px)`;
   };
 
   React.useLayoutEffect(
-    () => updateScrollLinePosition(getCellPosition(props.initialUnit)),
+    () => updateScrollLinePosition(getCellPosition(props.currentUnit)),
     []
   );
 
