@@ -1,18 +1,17 @@
 import { trpc } from "@/utils/trpc";
 import type { NextPage } from "next";
-import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal } from "@/components/Modal";
 import { EditReminderModalContent } from "@/components/EditReminderModalContent";
 import { ReminderComponent } from "@/components/ReminderComponent";
 import { useSession } from "next-auth/react";
 import SyncIndicator from "@/components/SyncIndicator";
 import useOnline from "@/hooks/useOnline";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
 import cuid from "cuid";
+import { LoginModalContent } from "@/components/LoginModalContent";
 
 const Home: NextPage = () => {
-  const { data } = trpc.useQuery(["getReminders"]);
+  const tr = trpc.useQuery(["getReminders"], {});
   const session = useSession();
 
   const [reminders, setReminders] = useState<Reminder[]>([]);
@@ -64,16 +63,30 @@ const Home: NextPage = () => {
     cancelEdit,
   } = useCurrentlyEditedReminder({ deleteReminder, replaceReminder });
 
-  const [remindersContainer] = useAutoAnimate<HTMLDivElement>();
+  /**
+   * For better visual effect, we want to keep the reminder editing UI while the modal is closing.
+   * To do that, we need to store a copy of the last edited reminder.
+   * When the edit has already been cancelled, but the modal is still closing, use this copy.
+   */
+  const [fadingAwayReminder, setFadingAwayReminder] = useState(
+    currentlyEditedReminder
+  );
+  useEffect(() => {
+    if (currentlyEditedReminder === null) {
+      return;
+    }
+
+    setFadingAwayReminder(currentlyEditedReminder);
+  }, [currentlyEditedReminder]);
 
   return (
     <>
       <div className="min-h-full min-w-full">
         <header className="fixed w-full bg-white h-14 flex justify-center items-center">
-          <span className="bold text-xl">Current reminders</span>
+          {/* <IconButton> */}
         </header>
         {/* <SyncIndicator isOnline={isOnline} isSyncing={reminders.length !== 0} /> */}
-        <div className="px-6 pt-14 flex flex-col" ref={remindersContainer}>
+        <div className="px-6 pt-14 flex flex-col">
           {reminders.map((reminder) => (
             <ReminderComponent
               // When we're currently editing this reminder, show the preview instead of the actual reminder.
@@ -106,27 +119,35 @@ const Home: NextPage = () => {
       </div>
       <Modal
         isOpen={currentlyEditedReminder !== null}
-        onClose={() => {
-          /**
-           * When the user confirms or cancels the edit from within modal content, the close event fires,
-           * but the confirmation or cancellation have already been handled.
-           * We only need to cancel editing from here if the closing hasn't already been handled.
-           */
-          if (!currentlyEditedReminder) {
-            return;
-          }
-          cancelEdit();
-        }}
+        onCancel={cancelEdit}
+        onClosingAnimationEnd={() => setFadingAwayReminder(null)}
       >
-        {currentlyEditedReminder && (
+        {currentlyEditedReminder ? (
           <EditReminderModalContent
             reminder={currentlyEditedReminder}
             onChange={changeCurrentlyEditedReminder}
             onConfirm={confirmEdit}
             onCancel={cancelEdit}
           />
+        ) : (
+          fadingAwayReminder && (
+            // Visual enhancement: when the currently edited reminder is gone but the modal is still
+            // fading away, use last edited reminder's copy.
+            <EditReminderModalContent
+              reminder={fadingAwayReminder}
+              onChange={() => {}}
+              onConfirm={() => {}}
+              onCancel={() => {}}
+            />
+          )
         )}
       </Modal>
+      {/* <Modal
+        isOpen={isLoginModalOpen}
+        onCancel={() => setIsLoginModalOpen(false)}
+      >
+        <LoginModalContent onClose={() => setIsLoginModalOpen(false)} />
+      </Modal> */}
     </>
   );
 };
@@ -188,6 +209,8 @@ const useCurrentlyEditedReminder = (mutators: {
     cancelEdit,
   };
 };
+
+const useReminders = () => {};
 
 export interface Reminder {
   id: string;

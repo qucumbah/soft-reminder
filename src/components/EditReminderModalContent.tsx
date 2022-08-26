@@ -11,7 +11,10 @@ export const EditReminderModalContent: React.FC<{
   const [hours, setHours] = useState(props.reminder.timestamp.getHours());
   const [minutes, setMinutes] = useState(props.reminder.timestamp.getMinutes());
 
+  console.log(props.reminder.timestamp, props.reminder.timestamp.getHours(), hours);
+
   const changeTime = (hours: number, minutes: number) => {
+    console.log('changed');
     const timestamp = new Date();
 
     timestamp.setHours(hours);
