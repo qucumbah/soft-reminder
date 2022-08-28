@@ -1,16 +1,23 @@
+import { SyncStatus } from "@/pages/index";
 import Image from "next/image";
 
 const SyncIndicator: React.FC<{
-  isSyncing: boolean;
-  isOnline: boolean;
+  syncStatus: SyncStatus;
 }> = (props) => {
-  const currentImage = props.isOnline
-    ? props.isSyncing
-      ? "syncing"
-      : "in-sync"
-    : "offline";
+  const currentImage = (() => {
+    if (!props.syncStatus.session) {
+      return "not-logged-in";
+    }
+
+    if (!props.syncStatus.isOnline) {
+      return "offline";
+    }
+
+    return props.syncStatus.isSyncing ? "syncing" : "in-sync";
+  })();
+
   return (
-    <div className="w-16 aspect-square relative">
+    <div className="relative w-full h-full">
       <Image
         src="/sync.svg"
         layout="fill"
@@ -32,7 +39,9 @@ const SyncIndicator: React.FC<{
         layout="fill"
         className={[
           "transition-opacity",
-          currentImage === "offline" ? "opacity-100" : "opacity-0",
+          currentImage === "offline" || currentImage === "not-logged-in"
+            ? "opacity-100"
+            : "opacity-0",
         ].join(" ")}
       />
     </div>

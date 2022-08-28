@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 export const Modal: React.FC<{
   isOpen: boolean;
   onCancel: () => void;
-  onClosingAnimationEnd: () => void;
+  onClosingAnimationEnd?: () => void;
   children: React.ReactNode;
 }> = (props) => {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
@@ -37,7 +37,10 @@ export const Modal: React.FC<{
           "backdrop:bg-transparent", // Backdrop is troublesome to animate
         ].join(" ")}
         onCancel={props.onCancel}
-        onClose={() => setTimeout(props.onClosingAnimationEnd, 200)}
+        onClose={() =>
+          props.onClosingAnimationEnd &&
+          setTimeout(props.onClosingAnimationEnd, 200)
+        }
         onClick={props.onCancel}
       >
         <div

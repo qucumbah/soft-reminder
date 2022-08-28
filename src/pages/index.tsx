@@ -1,6 +1,6 @@
 import { trpc } from "@/utils/trpc";
 import type { NextPage } from "next";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { Modal } from "@/components/Modal";
 import { EditReminderModalContent } from "@/components/EditReminderModalContent";
 import { ReminderComponent } from "@/components/ReminderComponent";
@@ -9,10 +9,11 @@ import SyncIndicator from "@/components/SyncIndicator";
 import useOnline from "@/hooks/useOnline";
 import cuid from "cuid";
 import { LoginModalContent } from "@/components/LoginModalContent";
+import { Session } from "next-auth";
 
 const Home: NextPage = () => {
   const tr = trpc.useQuery(["getReminders"], {});
-  const session = useSession();
+  const { data: session } = useSession();
 
   const [reminders, setReminders] = useState<Reminder[]>([]);
 
@@ -71,7 +72,7 @@ const Home: NextPage = () => {
   const [fadingAwayReminder, setFadingAwayReminder] = useState(
     currentlyEditedReminder
   );
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (currentlyEditedReminder === null) {
       return;
     }
@@ -79,13 +80,22 @@ const Home: NextPage = () => {
     setFadingAwayReminder(currentlyEditedReminder);
   }, [currentlyEditedReminder]);
 
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
   return (
     <>
       <div className="min-h-full min-w-full">
-        <header className="fixed w-full bg-white h-14 flex justify-center items-center">
-          {/* <IconButton> */}
+        <header className="fixed w-full bg-white h-14 px-6 flex justify-center items-center">
+          <button className="relative w-10 aspect-square ml-auto border-2 rounded-lg border-sky-500" onClick={() => setIsLoginModalOpen(true)}>
+            <SyncIndicator
+              syncStatus={{
+                isOnline: true,
+                isSyncing: true,
+                session: null,
+              }}
+            />
+          </button>
         </header>
-        {/* <SyncIndicator isOnline={isOnline} isSyncing={reminders.length !== 0} /> */}
         <div className="px-6 pt-14 flex flex-col">
           {reminders.map((reminder) => (
             <ReminderComponent
@@ -142,12 +152,19 @@ const Home: NextPage = () => {
           )
         )}
       </Modal>
-      {/* <Modal
+      <Modal
         isOpen={isLoginModalOpen}
         onCancel={() => setIsLoginModalOpen(false)}
       >
-        <LoginModalContent onClose={() => setIsLoginModalOpen(false)} />
-      </Modal> */}
+        <LoginModalContent
+          syncStatus={{
+            isOnline: true,
+            isSyncing: false,
+            session: null,
+          }}
+          onClose={() => setIsLoginModalOpen(false)}
+        />
+      </Modal>
     </>
   );
 };
@@ -211,6 +228,12 @@ const useCurrentlyEditedReminder = (mutators: {
 };
 
 const useReminders = () => {};
+
+export interface SyncStatus {
+  isOnline: boolean;
+  session: Session | null;
+  isSyncing: boolean;
+}
 
 export interface Reminder {
   id: string;
