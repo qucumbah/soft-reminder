@@ -1,4 +1,5 @@
 import type { SyncStatus } from "@/pages/index";
+import { signOut } from 'next-auth/react';
 import GitHubSignInButton from "./GitHubSignInButton";
 import SyncIndicator from "./SyncIndicator";
 
@@ -23,12 +24,22 @@ export const LoginModalContent: React.FC<{
       return <GitHubSignInButton disabled={!props.syncStatus.isOnline} />;
     }
 
-    return <div>Logged in as ${props.syncStatus.session.user?.name}</div>;
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <span>Signed in as {props.syncStatus.session.user?.name}</span>
+        <button
+          className="rounded-md border border-sky-500 p-2"
+          onClick={() => signOut()}
+        >
+          Sign out
+        </button>
+      </div>
+    );
   };
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative flex w-full items-center">
+      <div className="relative flex items-center">
         <div className="w-8 aspect-square">
           <SyncIndicator syncStatus={props.syncStatus} />
         </div>

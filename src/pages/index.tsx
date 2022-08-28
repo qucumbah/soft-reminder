@@ -72,7 +72,7 @@ const Home: NextPage = () => {
   const [fadingAwayReminder, setFadingAwayReminder] = useState(
     currentlyEditedReminder
   );
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (currentlyEditedReminder === null) {
       return;
     }
@@ -85,15 +85,19 @@ const Home: NextPage = () => {
   return (
     <>
       <div className="min-h-full min-w-full">
-        <header className="fixed w-full bg-white h-14 px-6 flex justify-center items-center">
-          <button className="relative w-10 aspect-square ml-auto border-2 rounded-lg border-sky-500" onClick={() => setIsLoginModalOpen(true)}>
+        <header className="gap-2 fixed w-full bg-white h-14 px-6 flex justify-center items-center">
+          <button
+            className="relative w-10 aspect-square bg-white border border-slate-200 rounded-lg"
+            onClick={() => setIsLoginModalOpen(true)}
+          >
             <SyncIndicator
               syncStatus={{
-                isOnline: true,
-                isSyncing: true,
-                session: null,
+                isOnline,
+                isSyncing: false,
+                session,
               }}
             />
+            <div className="absolute w-[85%] aspect-square rounded-lg inset-0 m-auto top-2 left-1 blur-sm bg-sky-500 opacity-50 -z-50" />
           </button>
         </header>
         <div className="px-6 pt-14 flex flex-col">
@@ -121,9 +125,9 @@ const Home: NextPage = () => {
             }}
             className="w-14 aspect-square bg-white border border-slate-200 rounded-full absolute inset-0 m-auto"
           >
-            <div className="absolute w-5 h-[2px] rounded bg-sky-500 inset-0 m-auto"></div>
-            <div className="absolute w-5 h-[2px] rounded bg-sky-500 inset-0 m-auto rotate-90"></div>
-            <div className="absolute w-[85%] aspect-square rounded-full inset-0 m-auto top-3 blur-sm bg-sky-500 opacity-75 -z-50"></div>
+            <div className="absolute w-5 h-[2px] rounded bg-sky-500 inset-0 m-auto" />
+            <div className="absolute w-5 h-[2px] rounded bg-sky-500 inset-0 m-auto rotate-90" />
+            <div className="absolute w-[85%] aspect-square rounded-full inset-0 m-auto top-3 blur-sm bg-sky-500 opacity-75 -z-50" />
           </button>
         </div>
       </div>
@@ -158,9 +162,9 @@ const Home: NextPage = () => {
       >
         <LoginModalContent
           syncStatus={{
-            isOnline: true,
+            isOnline,
             isSyncing: false,
-            session: null,
+            session,
           }}
           onClose={() => setIsLoginModalOpen(false)}
         />

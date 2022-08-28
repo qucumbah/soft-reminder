@@ -9,7 +9,7 @@ const GitHubSignInButton: React.FC<{ disabled: boolean }> = (props) => {
       className="flex gap-2 items-center px-5 py-4 rounded-lg invert bg-white"
     >
       <div className="relative w-8 aspect-square invert">
-        <Image src="/github_mark.png" layout="fill" />
+        <Image src="/github_mark.png" priority layout="fill" />
       </div>
       <div>Sign in with GitHub</div>
     </button>
