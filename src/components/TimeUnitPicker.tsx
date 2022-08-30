@@ -74,8 +74,10 @@ export const TimeUnitPicker: React.FC<{
     scrollLine.current!.style.transform = `translateY(${-newScrollY}px)`;
   };
 
+  // This effect will only run on initial mount, and shouldn't depend on any further changes to props.currentUnit
   React.useLayoutEffect(
     () => updateScrollLinePosition(getCellPosition(props.currentUnit)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 

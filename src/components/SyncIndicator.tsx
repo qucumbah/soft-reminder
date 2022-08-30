@@ -22,6 +22,7 @@ const SyncIndicator: React.FC<{
         src="/sync.svg"
         layout="fill"
         priority
+        alt=""
         className={[
           "animate-spin [animation-direction: reverse] transition-opacity",
           currentImage === "syncing" ? "opacity-100" : "opacity-0",
@@ -31,6 +32,7 @@ const SyncIndicator: React.FC<{
         src="/sync_ok.svg"
         layout="fill"
         priority
+        alt=""
         className={[
           "transition-opacity scale-75",
           currentImage === "in-sync" ? "opacity-100" : "opacity-0",
@@ -40,6 +42,7 @@ const SyncIndicator: React.FC<{
         src="/sync_warning.svg"
         layout="fill"
         priority
+        alt=""
         className={[
           "transition-opacity",
           currentImage === "offline" || currentImage === "not-logged-in"
