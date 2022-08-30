@@ -1,5 +1,5 @@
 import type { SyncStatus } from "@/pages/index";
-import { signOut } from 'next-auth/react';
+import { signOut } from "next-auth/react";
 import GitHubSignInButton from "./GitHubSignInButton";
 import SyncIndicator from "./SyncIndicator";
 
@@ -25,10 +25,14 @@ export const LoginModalContent: React.FC<{
     }
 
     return (
-      <div className="flex flex-col items-center gap-1">
-        <span>Signed in as {props.syncStatus.session.user?.name}</span>
+      <div className="flex items-center gap-4 w-full">
+        <div className="w-1/2 text-center">
+          <span>Signed in as</span>
+          <br />
+          <span>{props.syncStatus.session.user?.name}</span>
+        </div>
         <button
-          className="rounded-md border border-sky-500 p-2"
+          className="w-1/2 rounded-md border border-sky-500 p-2"
           onClick={() => signOut()}
         >
           Sign out
@@ -50,7 +54,7 @@ export const LoginModalContent: React.FC<{
       <div className="h-8"></div>
       <div className="flex w-full justify-center gap-8">
         <button
-          className="rounded-md border border-sky-500 p-2"
+          className="rounded-md border border-sky-500 p-2 w-1/2"
           onClick={props.onClose}
         >
           Close
