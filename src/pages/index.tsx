@@ -14,6 +14,7 @@ import { Session } from "next-auth";
 const Home: NextPage = () => {
   const tr = trpc.useQuery(["getReminders"], {});
   const { data: session } = useSession();
+  console.log(session);
 
   const [reminders, setReminders] = useState<Reminder[]>([]);
 

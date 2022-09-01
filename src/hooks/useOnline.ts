@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 
 const useOnline = () => {
-  const isSsg = typeof window === "undefined";
-  const [isOnline, setIsOnline] = useState(isSsg ? true : navigator.onLine);
+  const [isOnline, setIsOnline] = useState(false);
+
+  useEffect(() => setIsOnline(navigator.onLine), []);
 
   useEffect(() => {
     const setOnline = () => setIsOnline(true);
