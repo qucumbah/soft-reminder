@@ -10,15 +10,14 @@ import useOnline from "@/hooks/useOnline";
 import cuid from "cuid";
 import { LoginModalContent } from "@/components/LoginModalContent";
 import { Session } from "next-auth";
+import { useCachedSession } from "@/hooks/useCachedSession";
 
 const Home: NextPage = () => {
-  const tr = trpc.useQuery(["getReminders"], {});
-  const { data: session } = useSession();
-  console.log(session);
-
-  const [reminders, setReminders] = useState<Reminder[]>([]);
-
   const isOnline = useOnline();
+  const session = useCachedSession(isOnline);
+  // const tr = trpc.useQuery(["getReminders"], {});
+  
+  const [reminders, setReminders] = useState<Reminder[]>([]);
 
   /**
    * Replaces a reminder from the reminders list by a new one.
