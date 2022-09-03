@@ -1,60 +1,20 @@
-import { trpc } from "@/utils/trpc";
 import type { NextPage } from "next";
-import { useState, useEffect, useLayoutEffect } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback } from "react";
 import { Modal } from "@/components/Modal";
 import { EditReminderModalContent } from "@/components/EditReminderModalContent";
 import { ReminderComponent } from "@/components/ReminderComponent";
-import { useSession } from "next-auth/react";
 import SyncIndicator from "@/components/SyncIndicator";
 import useOnline from "@/hooks/useOnline";
-import cuid from "cuid";
 import { LoginModalContent } from "@/components/LoginModalContent";
 import { Session } from "next-auth";
 import { useCachedSession } from "@/hooks/useCachedSession";
+import { Reminder, useCachedReminders } from "@/hooks/useCachedReminders";
 
 const Home: NextPage = () => {
   const isOnline = useOnline();
   const session = useCachedSession(isOnline);
-  // const tr = trpc.useQuery(["getReminders"], {});
-  
-  const [reminders, setReminders] = useState<Reminder[]>([]);
-
-  /**
-   * Replaces a reminder from the reminders list by a new one.
-   * Replacement's id has to be the same as of the one being replaced.
-   * @param newReminder reminder to be put in place of the old one.
-   */
-  const replaceReminder = (newReminder: Reminder) => {
-    setReminders((reminders) => {
-      return reminders.map((reminder) => {
-        return reminder.id === newReminder.id ? newReminder : reminder;
-      });
-    });
-  };
-
-  const addReminder = () => {
-    const timestamp = new Date();
-
-    timestamp.setHours(0);
-    timestamp.setMinutes(0);
-    timestamp.setSeconds(0);
-
-    const newReminder = {
-      enabled: true,
-      id: cuid(),
-      timestamp,
-    };
-
-    setReminders((reminders) => [...reminders, newReminder]);
-
-    return newReminder;
-  };
-
-  const deleteReminder = (reminderToDelete: Reminder) => {
-    setReminders((reminders) =>
-      reminders.filter((reminder) => reminder.id !== reminderToDelete.id)
-    );
-  };
+  const { reminders, addReminder, replaceReminder, deleteReminder } =
+    useCachedReminders(isOnline);
 
   const {
     currentlyEditedReminder,
@@ -204,9 +164,21 @@ const useCurrentlyEditedReminder = (mutators: {
     setIsCurrentlyEditedReminderNew(options.isNew ?? false);
   };
 
-  const changeCurrentlyEditedReminder = (newReminder: Reminder) => {
-    setCurrentlyEditedReminder(newReminder);
-  };
+  const changeCurrentlyEditedReminder = useCallback(
+    (changes: Partial<Reminder>) => {
+      setCurrentlyEditedReminder((oldReminder) => {
+        if (oldReminder === null) {
+          throw new Error();
+        }
+
+        return {
+          ...oldReminder,
+          ...changes,
+        };
+      });
+    },
+    []
+  );
 
   const confirmEdit = () => {
     mutators.replaceReminder(currentlyEditedReminder!);
@@ -231,18 +203,10 @@ const useCurrentlyEditedReminder = (mutators: {
   };
 };
 
-const useReminders = () => {};
-
 export interface SyncStatus {
   isOnline: boolean;
   session: Session | null;
   isSyncing: boolean;
-}
-
-export interface Reminder {
-  id: string;
-  timestamp: Date;
-  enabled: boolean;
 }
 
 export default Home;

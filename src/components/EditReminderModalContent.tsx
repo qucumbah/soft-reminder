@@ -1,17 +1,17 @@
+import { Reminder } from '@/hooks/useCachedReminders';
 import { useEffect, useState } from "react";
-import { Reminder } from "@/pages/index";
 import { TimeUnitPicker } from "./TimeUnitPicker";
 
 export const EditReminderModalContent: React.FC<{
   reminder: Reminder;
-  onChange: (newReminder: Reminder) => void;
+  onChange: (change: Partial<Reminder>) => void;
   onConfirm: () => void;
   onCancel: () => void;
 }> = (props) => {
   const [hours, setHours] = useState(props.reminder.timestamp.getHours());
   const [minutes, setMinutes] = useState(props.reminder.timestamp.getMinutes());
 
-  const { reminder, onChange } = props;
+  const { onChange } = props;
   useEffect(() => {
     const timestamp = new Date();
 
@@ -20,10 +20,9 @@ export const EditReminderModalContent: React.FC<{
     timestamp.setSeconds(0);
 
     onChange({
-      ...reminder,
       timestamp,
     });
-  }, [hours, minutes, reminder, onChange]);
+  }, [hours, minutes, onChange]);
 
   return (
     <>
