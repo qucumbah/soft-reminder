@@ -13,8 +13,11 @@ import { Reminder, useCachedReminders } from "@/hooks/useCachedReminders";
 const Home: NextPage = () => {
   const isOnline = useOnline();
   const session = useCachedSession(isOnline);
-  const { reminders, addReminder, replaceReminder, deleteReminder } =
-    useCachedReminders(isOnline);
+  const { reminders, addReminder, changeReminder, deleteReminder } =
+    useCachedReminders({
+      isOnline,
+      isSignedIn: session !== null,
+    });
 
   const {
     currentlyEditedReminder,
@@ -22,7 +25,7 @@ const Home: NextPage = () => {
     changeCurrentlyEditedReminder,
     confirmEdit,
     cancelEdit,
-  } = useCurrentlyEditedReminder({ deleteReminder, replaceReminder });
+  } = useCurrentlyEditedReminder({ deleteReminder, changeReminder });
 
   /**
    * For better visual effect, we want to keep the reminder editing UI while the modal is closing.
@@ -72,7 +75,7 @@ const Home: NextPage = () => {
               openReminderEditDialogue={() =>
                 startEditingReminder({ reminder })
               }
-              changeReminder={replaceReminder}
+              changeReminder={changeReminder}
               key={reminder.id}
             />
           ))}
@@ -140,7 +143,7 @@ const Home: NextPage = () => {
  * @param mutators replate and delete functions for edit confirmation and cancellation.
  */
 const useCurrentlyEditedReminder = (mutators: {
-  replaceReminder: (newReminder: Reminder) => void;
+  changeReminder: (changedReminder: Reminder) => void;
   deleteReminder: (reminderToDelete: Reminder) => void;
 }) => {
   /**
@@ -181,7 +184,7 @@ const useCurrentlyEditedReminder = (mutators: {
   );
 
   const confirmEdit = () => {
-    mutators.replaceReminder(currentlyEditedReminder!);
+    mutators.changeReminder(currentlyEditedReminder!);
 
     setCurrentlyEditedReminder(null);
   };

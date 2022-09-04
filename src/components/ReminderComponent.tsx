@@ -1,5 +1,5 @@
+import type { Reminder } from "@/hooks/useCachedReminders";
 import * as React from "react";
-import { Reminder } from "@/pages/index";
 
 export const ReminderComponent: React.FC<{
   reminder: Reminder;
