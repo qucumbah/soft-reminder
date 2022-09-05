@@ -16,6 +16,10 @@ model Reminder {
   id        String   @id @default(cuid())
   timestamp DateTime
   enabled   Boolean
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([id, userId])
 }
 
 model Account {
@@ -38,12 +42,13 @@ model Account {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?    @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
+  Reminder      Reminder[]
 }
 
 model VerificationToken {
