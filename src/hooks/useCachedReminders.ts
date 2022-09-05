@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import cuid from "cuid";
+import { useState, useEffect, useReducer } from "react";
 import { trpc } from "@/utils/trpc";
 import superjson from "superjson";
 
@@ -9,47 +8,40 @@ export const useCachedReminders = (inputs: {
 }) => {
   const { isOnline, isSignedIn } = inputs;
   const { client: trpcClient } = trpc.useContext();
-  const [reminders, setReminders] = useState<Reminder[]>([]);
 
-  /**
-   * Changes a reminder by replacing it with a new one.
-   * Replacement's id has to be the same as of the one being replaced.
-   * @param changedReminder reminder to be put in place of the old one.
-   */
-  const changeReminder = (changedReminder: Reminder) => {
-    trpcClient.mutation("reminder.change", changedReminder);
-    setReminders((reminders) => {
-      return reminders.map((reminder) => {
-        return reminder.id === changedReminder.id ? changedReminder : reminder;
-      });
-    });
+  type ResetRemindersAction = {
+    type: "reset";
+    payload: Reminder[];
   };
 
-  const addReminder = () => {
-    const timestamp = new Date();
+  const [reminders, dispatch] = useReducer(
+    (
+      prevReminders: Reminder[],
+      action: ReminderAction | ResetRemindersAction
+    ) => {
+      if (action.type === "reset") {
+        return action.payload;
+      }
 
-    timestamp.setHours(0);
-    timestamp.setMinutes(0);
-    timestamp.setSeconds(0);
+      const { payload: actionReminder } = action;
 
-    const newReminder = {
-      enabled: true,
-      id: cuid(),
-      timestamp,
-    };
-
-    trpcClient.mutation("reminder.add", newReminder);
-    setReminders((reminders) => [...reminders, newReminder]);
-
-    return newReminder;
-  };
-
-  const deleteReminder = (reminderToDelete: Reminder) => {
-    trpcClient.mutation("reminder.delete", reminderToDelete);
-    setReminders((reminders) =>
-      reminders.filter((reminder) => reminder.id !== reminderToDelete.id)
-    );
-  };
+      switch (action.type) {
+        case "add":
+          return [...prevReminders, actionReminder];
+        case "change":
+          return prevReminders.map((reminder) => {
+            return reminder.id === actionReminder.id
+              ? actionReminder
+              : reminder;
+          });
+        case "delete":
+          return prevReminders.filter(
+            (reminder) => reminder.id !== actionReminder.id
+          );
+      }
+    },
+    []
+  );
 
   const [remindersStatus, setRemindersStatus] = useState<
     "uninitialized" | "from-cache" | "from-network"
@@ -63,11 +55,11 @@ export const useCachedReminders = (inputs: {
 
   useEffect(() => {
     if (remindersStatus === "uninitialized") {
-      setReminders(getCachedReminders());
+      dispatch({ type: "reset", payload: getCachedReminders() });
       setRemindersStatus("from-cache");
     }
 
-    if (!isOnline || remindersStatus === "from-network") {
+    if (!isOnline || !isSignedIn || remindersStatus === "from-network") {
       return;
     }
 
@@ -77,7 +69,7 @@ export const useCachedReminders = (inputs: {
       if (ignore) {
         return;
       }
-      setReminders(onlineReminders);
+      dispatch({ type: "reset", payload: onlineReminders });
       saveRemindersToCache(onlineReminders);
       setRemindersStatus("from-network");
     });
@@ -85,13 +77,11 @@ export const useCachedReminders = (inputs: {
     return () => {
       ignore = true;
     };
-  }, [isOnline, remindersStatus]);
+  }, [isOnline, remindersStatus, trpcClient]);
 
   return {
     reminders,
-    addReminder,
-    changeReminder,
-    deleteReminder,
+    dispatch,
   };
 };
 
@@ -114,3 +104,8 @@ export interface Reminder {
   timestamp: Date;
   enabled: boolean;
 }
+
+export type ReminderAction = {
+  type: "add" | "change" | "delete";
+  payload: Reminder;
+};

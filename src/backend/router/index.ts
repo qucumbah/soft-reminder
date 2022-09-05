@@ -75,6 +75,18 @@ const remindersRouter = trpc
         data: input,
       });
     },
+  })
+  .mutation("reset", {
+    input: z.array(
+      z.object({
+        id: z.string(),
+        timestamp: z.date(),
+        enabled: z.boolean(),
+      })
+    ),
+    async resolve({ input, ctx }) {
+      return;
+    },
   });
 
 export const appRouter = trpc

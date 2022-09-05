@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import { useState, useEffect, useLayoutEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Dispatch } from "react";
 import { Modal } from "@/components/Modal";
 import { EditReminderModalContent } from "@/components/EditReminderModalContent";
 import { ReminderComponent } from "@/components/ReminderComponent";
@@ -8,16 +8,34 @@ import useOnline from "@/hooks/useOnline";
 import { LoginModalContent } from "@/components/LoginModalContent";
 import { Session } from "next-auth";
 import { useCachedSession } from "@/hooks/useCachedSession";
-import { Reminder, useCachedReminders } from "@/hooks/useCachedReminders";
+import {
+  Reminder,
+  ReminderAction,
+  useCachedReminders,
+} from "@/hooks/useCachedReminders";
+import cuid from "cuid";
 
 const Home: NextPage = () => {
   const isOnline = useOnline();
   const session = useCachedSession(isOnline);
-  const { reminders, addReminder, changeReminder, deleteReminder } =
-    useCachedReminders({
-      isOnline,
-      isSignedIn: session !== null,
-    });
+  const { reminders, dispatch } = useCachedReminders({
+    isOnline,
+    isSignedIn: session !== null,
+  });
+
+  const createEmptyReminder = () => {
+    const timestamp = new Date();
+
+    timestamp.setHours(0);
+    timestamp.setMinutes(0);
+    timestamp.setSeconds(0);
+
+    return {
+      enabled: true,
+      id: cuid(),
+      timestamp,
+    };
+  };
 
   const {
     currentlyEditedReminder,
@@ -25,7 +43,7 @@ const Home: NextPage = () => {
     changeCurrentlyEditedReminder,
     confirmEdit,
     cancelEdit,
-  } = useCurrentlyEditedReminder({ deleteReminder, changeReminder });
+  } = useCurrentlyEditedReminder(dispatch);
 
   /**
    * For better visual effect, we want to keep the reminder editing UI while the modal is closing.
@@ -75,7 +93,12 @@ const Home: NextPage = () => {
               openReminderEditDialogue={() =>
                 startEditingReminder({ reminder })
               }
-              changeReminder={changeReminder}
+              changeReminder={(newReminder) =>
+                dispatch({
+                  type: "change",
+                  payload: newReminder,
+                })
+              }
               key={reminder.id}
             />
           ))}
@@ -83,7 +106,11 @@ const Home: NextPage = () => {
         <div className="fixed bottom-0 h-24 w-screen bg-gradient-to-t from-white via-[#fffe]">
           <button
             onClick={() => {
-              const newReminder = addReminder();
+              const newReminder = createEmptyReminder();
+              dispatch({
+                type: "add",
+                payload: newReminder,
+              });
               startEditingReminder({ reminder: newReminder, isNew: true });
             }}
             className="w-14 aspect-square bg-white border border-slate-200 rounded-full absolute inset-0 m-auto"
@@ -140,12 +167,9 @@ const Home: NextPage = () => {
  * We want to show the preview of the currently edited reminder in the reminders list.
  * To do this, we create a copy of the edited reminder.
  * When the user commits the change, the original reminder is replaced with this copy.
- * @param mutators replate and delete functions for edit confirmation and cancellation.
+ * @param dispatch dispatch function of reminders state.
  */
-const useCurrentlyEditedReminder = (mutators: {
-  changeReminder: (changedReminder: Reminder) => void;
-  deleteReminder: (reminderToDelete: Reminder) => void;
-}) => {
+const useCurrentlyEditedReminder = (dispatch: Dispatch<ReminderAction>) => {
   /**
    * Adding a new reminder is basically creating a default reminder and immediately putting it up for edit.
    * The way we handle editing of new and existing reminder is similar, but cancellation is different.
@@ -184,14 +208,20 @@ const useCurrentlyEditedReminder = (mutators: {
   );
 
   const confirmEdit = () => {
-    mutators.changeReminder(currentlyEditedReminder!);
+    dispatch({
+      type: "change",
+      payload: currentlyEditedReminder!,
+    });
 
     setCurrentlyEditedReminder(null);
   };
 
   const cancelEdit = () => {
     if (isCurrentlyEditedReminderNew) {
-      mutators.deleteReminder(currentlyEditedReminder!);
+      dispatch({
+        type: "delete",
+        payload: currentlyEditedReminder!,
+      });
     }
 
     setCurrentlyEditedReminder(null);
