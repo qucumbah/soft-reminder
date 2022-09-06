@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import { useState, useEffect, useCallback, Dispatch } from "react";
+import { useState, useEffect } from "react";
 import { Modal } from "@/components/Modal";
 import { EditReminderModalContent } from "@/components/EditReminderModalContent";
 import { ReminderComponent } from "@/components/ReminderComponent";
@@ -8,12 +8,9 @@ import useOnline from "@/hooks/useOnline";
 import { LoginModalContent } from "@/components/LoginModalContent";
 import { Session } from "next-auth";
 import { useCachedSession } from "@/hooks/useCachedSession";
-import {
-  Reminder,
-  ReminderAction,
-  useCachedReminders,
-} from "@/hooks/useCachedReminders";
+import { useCachedReminders } from "@/hooks/useCachedReminders";
 import cuid from "cuid";
+import { useCurrentlyEditedReminder } from "../hooks/useCurrentlyEditedReminder";
 
 const Home: NextPage = () => {
   const isOnline = useOnline();
@@ -161,79 +158,6 @@ const Home: NextPage = () => {
       </Modal>
     </>
   );
-};
-
-/**
- * We want to show the preview of the currently edited reminder in the reminders list.
- * To do this, we create a copy of the edited reminder.
- * When the user commits the change, the original reminder is replaced with this copy.
- * @param dispatch dispatch function of reminders state.
- */
-const useCurrentlyEditedReminder = (dispatch: Dispatch<ReminderAction>) => {
-  /**
-   * Adding a new reminder is basically creating a default reminder and immediately putting it up for edit.
-   * The way we handle editing of new and existing reminder is similar, but cancellation is different.
-   * The new reminder should be deleted on cancel.
-   */
-  const [isCurrentlyEditedReminderNew, setIsCurrentlyEditedReminderNew] =
-    useState(false);
-  /**
-   * This is a clone of the reminder to edit.
-   */
-  const [currentlyEditedReminder, setCurrentlyEditedReminder] =
-    useState<Reminder | null>(null);
-
-  const startEditingReminder = (options: {
-    reminder: Reminder;
-    isNew?: boolean;
-  }) => {
-    setCurrentlyEditedReminder({ ...options.reminder });
-    setIsCurrentlyEditedReminderNew(options.isNew ?? false);
-  };
-
-  const changeCurrentlyEditedReminder = useCallback(
-    (changes: Partial<Reminder>) => {
-      setCurrentlyEditedReminder((oldReminder) => {
-        if (oldReminder === null) {
-          throw new Error();
-        }
-
-        return {
-          ...oldReminder,
-          ...changes,
-        };
-      });
-    },
-    []
-  );
-
-  const confirmEdit = () => {
-    dispatch({
-      type: "change",
-      payload: currentlyEditedReminder!,
-    });
-
-    setCurrentlyEditedReminder(null);
-  };
-
-  const cancelEdit = () => {
-    if (isCurrentlyEditedReminderNew) {
-      dispatch({
-        type: "delete",
-        payload: currentlyEditedReminder!,
-      });
-    }
-
-    setCurrentlyEditedReminder(null);
-  };
-
-  return {
-    currentlyEditedReminder,
-    startEditingReminder,
-    changeCurrentlyEditedReminder,
-    confirmEdit,
-    cancelEdit,
-  };
 };
 
 export interface SyncStatus {
