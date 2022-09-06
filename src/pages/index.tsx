@@ -66,7 +66,7 @@ const Home: NextPage = () => {
   return (
     <>
       <div className="min-h-full min-w-full">
-        <header className="gap-2 fixed w-full bg-white h-14 px-6 flex justify-center items-center">
+        <header className="gap-2 fixed w-full bg-white h-14 px-6 flex justify-center items-center z-10">
           <button
             className="relative w-10 aspect-square bg-white border border-slate-200 rounded-lg"
             onClick={() => setIsLoginModalOpen(true)}
@@ -81,7 +81,7 @@ const Home: NextPage = () => {
             <div className="absolute w-[85%] aspect-square rounded-lg inset-0 m-auto top-2 left-1 blur-sm bg-sky-500 opacity-50 -z-50" />
           </button>
         </header>
-        <div className="px-6 pt-14 flex flex-col">
+        <div className="px-6 pt-14 pb-24 flex flex-col max-w-xl mx-auto">
           {reminders.map((reminder) => (
             <ReminderComponent
               // When we're currently editing this reminder, show the preview instead of the actual reminder.
@@ -103,7 +103,7 @@ const Home: NextPage = () => {
             />
           ))}
         </div>
-        <div className="fixed bottom-0 h-24 w-screen bg-gradient-to-t from-white via-[#fffe]">
+        <div className="fixed bottom-0 h-24 w-screen bg-gradient-to-t from-white via-[#fffe] pointer-events-none">
           <button
             onClick={() => {
               const newReminder = createEmptyReminder();
@@ -113,7 +113,7 @@ const Home: NextPage = () => {
               });
               startEditingReminder({ reminder: newReminder, isNew: true });
             }}
-            className="w-14 aspect-square bg-white border border-slate-200 rounded-full absolute inset-0 m-auto"
+            className="w-14 aspect-square bg-white border border-slate-200 rounded-full absolute inset-0 m-auto pointer-events-auto"
           >
             <div className="absolute w-5 h-[2px] rounded bg-sky-500 inset-0 m-auto" />
             <div className="absolute w-5 h-[2px] rounded bg-sky-500 inset-0 m-auto rotate-90" />

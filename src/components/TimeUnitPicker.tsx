@@ -174,8 +174,8 @@ export const TimeUnitPicker: React.FC<{
     requestAnimationFrame(animate);
   };
 
-  const startDrag: React.TouchEventHandler = (event) => {
-    prevTouchY.current = event.changedTouches[0].clientY;
+  const startDrag = (clientY: number) => {
+    prevTouchY.current = clientY;
     touchOriginOffsetY.current = 0;
     isDragging.current = true;
     requestAnimationFrame(animate);
@@ -186,25 +186,45 @@ export const TimeUnitPicker: React.FC<{
   };
 
   useEffect(() => {
-    const handleTouchMove = (event: TouchEvent) => {
+    const handlePointerMove = (clientY: number) => {
       if (!isDragging.current) {
         return;
       }
 
-      touchOriginOffsetY.current +=
-        event.changedTouches[0].clientY - prevTouchY.current;
-      prevTouchY.current = event.changedTouches[0].clientY;
+      touchOriginOffsetY.current += clientY - prevTouchY.current;
+      prevTouchY.current = clientY;
     };
 
+    const handleTouchMove = (event: TouchEvent) =>
+      handlePointerMove(event.changedTouches[0].clientY);
+    const handleMouseMove = (event: MouseEvent) =>
+      handlePointerMove(event.clientY);
+    const handleMouseUp = (event: MouseEvent) => {
+      if (!isDragging.current) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      stopDrag();
+    }
+
     window.addEventListener("touchmove", handleTouchMove);
-    return () => window.removeEventListener("touchmove", handleTouchMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("click", handleMouseUp, true);
+    return () => {
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("click", handleMouseUp, true);
+    };
   });
 
   return (
     <div className="relative w-full h-48 overflow-hidden">
       <div
         className="flex flex-col"
-        onTouchStart={startDrag}
+        onTouchStart={(event) => startDrag(event.changedTouches[0].clientY)}
+        onMouseDown={(event) => startDrag(event.clientY)}
         onTouchEnd={stopDrag}
         onTouchCancel={stopDrag}
         ref={scrollLine}
@@ -213,7 +233,7 @@ export const TimeUnitPicker: React.FC<{
           return (
             <div
               key={index}
-              className="relative w-full h-16 flex justify-center items-center text-5xl select-none"
+              className="relative w-full h-16 flex justify-center items-center text-5xl select-none cursor-pointer"
             >
               {index}
             </div>

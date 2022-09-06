@@ -21,9 +21,9 @@ export const Modal: React.FC<{
   return (
     <div
       className={[
-        "fixed w-screen h-full inset-0 bg-slate-900 duration-200 ease transition-opacity",
+        "fixed w-screen h-full inset-0 bg-slate-900 bg-opacity-50 duration-200 ease transition-opacity backdrop-blur-[2px] z-50",
         props.isOpen
-          ? "opacity-50 pointer-events-auto"
+          ? "opacity-100 pointer-events-auto"
           : "opacity-0 pointer-events-none",
       ].join(" ")}
     >
@@ -47,7 +47,7 @@ export const Modal: React.FC<{
           className="bg-transparent"
           onClick={(event) => event.stopPropagation()}
         >
-          <div className="bg-white w-[calc(100vw_-_4rem)] p-8 rounded-xl inset-0 m-auto">
+          <div className="bg-white w-[calc(100vw_-_4rem)] max-w-sm p-8 rounded-xl inset-0 m-auto">
             {props.children}
           </div>
         </div>

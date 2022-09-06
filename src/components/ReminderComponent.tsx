@@ -8,7 +8,7 @@ export const ReminderComponent: React.FC<{
 }> = (props) => {
   const padTime = (time: number) => time.toString().padStart(2, "0");
   return (
-    <div className="h-[5rem] flex justify-between items-center">
+    <div className="h-[5rem] flex justify-between items-center isolate">
       <button
         key={props.reminder.id}
         onClick={props.openReminderEditDialogue}
@@ -36,7 +36,7 @@ export const ReminderComponent: React.FC<{
             }}
             checked={props.reminder.enabled}
             className={[
-              "relative appearance-none w-full h-full rounded bg-white border-2 peer",
+              "relative appearance-none w-full h-full rounded bg-white border-2 peer cursor-pointer",
               "transition after:transition",
               "after:block after:absolute after:inset-0.5 after:rounded",
               "border-gray-400 after:bg-white",
