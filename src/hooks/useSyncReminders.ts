@@ -1,5 +1,5 @@
 import { trpc } from "@/utils/trpc";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import type { ReminderAction } from "./useCachedReminders";
 
 export const useSyncReminders = (inputs: {
@@ -8,7 +8,18 @@ export const useSyncReminders = (inputs: {
 }) => {
   const { client: trpcClient } = trpc.useContext();
   const [syncQueue, setSyncQueue] = useState<ReminderAction[]>([]);
-  const [isSyncing, setIsSyncing] = useState(false);
+
+  /**
+   * The value of whether the sync is in process has to be updated immediately.
+   * Since react state updates are not immediate, using `useState` for this
+   * causes nasty race conditions.
+   * To make it immediate, `useRef` is used instead.
+   * 
+   * But we still need to notify updates using sync state that a change has
+   * occurred. Thus, we use a separate `useState` for indicator.
+   */
+  const isSyncingRef = useRef(false);
+  const [isSyncingIndicator, setIsSyncingIndicator] = useState(false);
 
   const canSync = inputs.isOnline && inputs.isSignedIn;
 
@@ -17,7 +28,7 @@ export const useSyncReminders = (inputs: {
       return;
     }
 
-    if (isSyncing) {
+    if (isSyncingRef.current) {
       return;
     }
 
@@ -25,17 +36,27 @@ export const useSyncReminders = (inputs: {
       return;
     }
 
-    setIsSyncing(true);
+    isSyncingRef.current = true;
+    setIsSyncingIndicator(true);
 
     const action = syncQueue[0];
 
     trpcClient.mutation(`reminder.${action.type}`, action.payload).then(() => {
-      setSyncQueue((prevSyncQueue) => prevSyncQueue.slice(1));
-      setIsSyncing(false);
-    });
-  }, [canSync, syncQueue, isSyncing, trpcClient]);
+      setSyncQueue((prevSyncQueue) => {
+        return prevSyncQueue.slice(1);
+      });
 
-  return (newAction: ReminderAction) => {
-    setSyncQueue((prevSyncQueue) => [...prevSyncQueue, newAction]);
+      isSyncingRef.current = false;
+      setIsSyncingIndicator(false);
+    });
+  }, [canSync, syncQueue, trpcClient]);
+
+  return {
+    enqueueSyncAction: (newAction: ReminderAction) => {
+      setSyncQueue((prevSyncQueue) => {
+        return [...prevSyncQueue, newAction];
+      });
+    },
+    isSyncing: isSyncingIndicator,
   };
 };

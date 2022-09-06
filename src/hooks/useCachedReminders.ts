@@ -1,7 +1,7 @@
 import { useState, useEffect, useReducer } from "react";
 import { trpc } from "@/utils/trpc";
 import superjson from "superjson";
-import { useSyncReminders } from './useSyncReminders';
+import { useSyncReminders } from "./useSyncReminders";
 
 export const useCachedReminders = (inputs: {
   isOnline: boolean;
@@ -10,7 +10,7 @@ export const useCachedReminders = (inputs: {
   const { isOnline, isSignedIn } = inputs;
   const { client: trpcClient } = trpc.useContext();
 
-  const enqueueSyncItem = useSyncReminders(inputs);
+  const { enqueueSyncAction, isSyncing } = useSyncReminders(inputs);
 
   type ResetRemindersAction = {
     type: "reset";
@@ -26,7 +26,7 @@ export const useCachedReminders = (inputs: {
         return action.payload;
       }
 
-      enqueueSyncItem(action);
+      enqueueSyncAction(action);
 
       const { payload: actionReminder } = action;
 
@@ -87,6 +87,7 @@ export const useCachedReminders = (inputs: {
   return {
     reminders,
     dispatch,
+    isSyncing,
   };
 };
 

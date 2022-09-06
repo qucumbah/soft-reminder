@@ -15,7 +15,7 @@ import { useCurrentlyEditedReminder } from "../hooks/useCurrentlyEditedReminder"
 const Home: NextPage = () => {
   const isOnline = useOnline();
   const session = useCachedSession(isOnline);
-  const { reminders, dispatch } = useCachedReminders({
+  const { reminders, dispatch, isSyncing } = useCachedReminders({
     isOnline,
     isSignedIn: session !== null,
   });
@@ -71,7 +71,7 @@ const Home: NextPage = () => {
             <SyncIndicator
               syncStatus={{
                 isOnline,
-                isSyncing: false,
+                isSyncing,
                 session,
               }}
             />
@@ -150,7 +150,7 @@ const Home: NextPage = () => {
         <LoginModalContent
           syncStatus={{
             isOnline,
-            isSyncing: false,
+            isSyncing,
             session,
           }}
           onClose={() => setIsLoginModalOpen(false)}
