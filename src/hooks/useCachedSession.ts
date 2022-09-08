@@ -2,7 +2,12 @@ import { useState, useEffect } from "react";
 import { getSession } from "next-auth/react";
 import { Session } from "next-auth";
 
-export const useCachedSession = (isOnline: boolean) => {
+export const useCachedSession = (inputs: {
+  isOnline: boolean;
+  isLoadingOnlineStatus: boolean;
+}) => {
+  const { isOnline, isLoadingOnlineStatus } = inputs;
+
   const [session, setSession] = useState<Session | null>(null);
   const [sessionStatus, setSessionStatus] = useState<
     "uninitialized" | "from-cache" | "from-network"
@@ -17,9 +22,13 @@ export const useCachedSession = (isOnline: boolean) => {
    * loading still continues since we're fetching the session value from the
    * network in the background.
    */
-  const [isFinished, setIsFinished] = useState(true);
+  const [isFinished, setIsFinished] = useState(false);
 
   useEffect(() => {
+    if (isLoadingOnlineStatus) {
+      return;
+    }
+
     if (sessionStatus === "uninitialized") {
       setSession(getCachedSession());
       setSessionStatus("from-cache");
@@ -50,7 +59,7 @@ export const useCachedSession = (isOnline: boolean) => {
     return () => {
       ignore = true;
     };
-  }, [isOnline, sessionStatus]);
+  }, [isOnline, isLoadingOnlineStatus, sessionStatus]);
 
   return {
     session,
