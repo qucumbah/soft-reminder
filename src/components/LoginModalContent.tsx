@@ -1,13 +1,16 @@
-import type { SyncStatus } from "@/pages/index";
 import { signOut } from "next-auth/react";
 import GitHubSignInButton from "./GitHubSignInButton";
-import SyncIndicator from "./SyncIndicator";
+import SyncIndicator, { SyncStatus } from "./SyncIndicator";
 
 export const LoginModalContent: React.FC<{
   syncStatus: SyncStatus;
   onClose: () => void;
 }> = (props) => {
   const getSyncStatusMessage = () => {
+    if (!props.syncStatus.isSessionFinishedLoading) {
+      return "loading...";
+    }
+
     if (!props.syncStatus.isOnline) {
       return "offline";
     }

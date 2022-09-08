@@ -1,8 +1,8 @@
 import { trpc } from "@/utils/trpc";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { ReminderAction } from "./useCachedReminders";
 
-export const useSyncReminders = (inputs: {
+export const useRemindersSyncQueue = (inputs: {
   isOnline: boolean;
   isSignedIn: boolean;
 }) => {
@@ -14,7 +14,7 @@ export const useSyncReminders = (inputs: {
    * Since react state updates are not immediate, using `useState` for this
    * causes nasty race conditions.
    * To make it immediate, `useRef` is used instead.
-   * 
+   *
    * But we still need to notify updates using sync state that a change has
    * occurred. Thus, we use a separate `useState` for indicator.
    */

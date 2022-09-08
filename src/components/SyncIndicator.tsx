@@ -1,19 +1,23 @@
-import { SyncStatus } from "@/pages/index";
+import { Session } from "next-auth";
 import Image from "next/image";
 
 const SyncIndicator: React.FC<{
   syncStatus: SyncStatus;
 }> = (props) => {
-  const currentImage = (() => {
-    if (!props.syncStatus.session) {
-      return "not-logged-in";
+  const syncStatus = (() => {
+    if (!props.syncStatus.isSessionFinishedLoading) {
+      return "loadingSession";
     }
 
     if (!props.syncStatus.isOnline) {
       return "offline";
     }
 
-    return props.syncStatus.isSyncing ? "syncing" : "in-sync";
+    if (!props.syncStatus.session) {
+      return "notLoggedIn";
+    }
+
+    return props.syncStatus.isSyncing ? "syncInProgress" : "synchronized";
   })();
 
   return (
@@ -25,7 +29,9 @@ const SyncIndicator: React.FC<{
         alt=""
         className={[
           "animate-spin [animation-direction: reverse] transition-opacity",
-          currentImage === "syncing" ? "opacity-100" : "opacity-0",
+          syncStatus === "loadingSession" || syncStatus === "syncInProgress"
+            ? "opacity-100"
+            : "opacity-0",
         ].join(" ")}
       />
       <Image
@@ -35,7 +41,7 @@ const SyncIndicator: React.FC<{
         alt=""
         className={[
           "transition-opacity scale-75",
-          currentImage === "in-sync" ? "opacity-100" : "opacity-0",
+          syncStatus === "synchronized" ? "opacity-100" : "opacity-0",
         ].join(" ")}
       />
       <Image
@@ -45,7 +51,7 @@ const SyncIndicator: React.FC<{
         alt=""
         className={[
           "transition-opacity",
-          currentImage === "offline" || currentImage === "not-logged-in"
+          syncStatus === "offline" || syncStatus === "notLoggedIn"
             ? "opacity-100"
             : "opacity-0",
         ].join(" ")}
@@ -55,3 +61,10 @@ const SyncIndicator: React.FC<{
 };
 
 export default SyncIndicator;
+
+export interface SyncStatus {
+  isOnline: boolean;
+  isSessionFinishedLoading: boolean;
+  session: Session | null;
+  isSyncing: boolean;
+}
