@@ -2,10 +2,7 @@ import { trpc } from "@/utils/trpc";
 import { useState, useEffect, useRef } from "react";
 import type { ReminderAction } from "./useCachedReminders";
 
-export const useRemindersSyncQueue = (inputs: {
-  isOnline: boolean;
-  isSignedIn: boolean;
-}) => {
+export const useRemindersSyncQueue = (inputs: { canSync: boolean }) => {
   const { client: trpcClient } = trpc.useContext();
   const [syncQueue, setSyncQueue] = useState<ReminderAction[]>([]);
 
@@ -21,7 +18,7 @@ export const useRemindersSyncQueue = (inputs: {
   const isSyncingRef = useRef(false);
   const [isSyncingIndicator, setIsSyncingIndicator] = useState(false);
 
-  const canSync = inputs.isOnline && inputs.isSignedIn;
+  const { canSync } = inputs;
 
   useEffect(() => {
     if (!canSync) {

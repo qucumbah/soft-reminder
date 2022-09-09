@@ -5,7 +5,7 @@ import { Session } from "next-auth";
 export const useCachedSession = (inputs: {
   isOnline: boolean;
   isLoadingOnlineStatus: boolean;
-}) => {
+}): SessionStatus => {
   const { isOnline, isLoadingOnlineStatus } = inputs;
 
   const [session, setSession] = useState<Session | null>(null);
@@ -67,6 +67,12 @@ export const useCachedSession = (inputs: {
     isFinished,
   };
 };
+
+export interface SessionStatus {
+  session: Session | null;
+  isReady: boolean;
+  isFinished: boolean;
+}
 
 const getCachedSession = () => {
   const cachedSessionString = localStorage.getItem("sessionInfo");

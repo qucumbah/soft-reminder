@@ -1,3 +1,4 @@
+import { SessionStatus } from "@/hooks/useCachedSession";
 import { Session } from "next-auth";
 import Image from "next/image";
 
@@ -5,7 +6,7 @@ const SyncIndicator: React.FC<{
   syncStatus: SyncStatus;
 }> = (props) => {
   const syncStatus = (() => {
-    if (!props.syncStatus.isSessionFinishedLoading) {
+    if (!props.syncStatus.sessionStatus.isFinished) {
       return "loadingSession";
     }
 
@@ -13,7 +14,7 @@ const SyncIndicator: React.FC<{
       return "offline";
     }
 
-    if (!props.syncStatus.session) {
+    if (!props.syncStatus.sessionStatus.session) {
       return "notLoggedIn";
     }
 
@@ -63,8 +64,7 @@ const SyncIndicator: React.FC<{
 export default SyncIndicator;
 
 export interface SyncStatus {
+  sessionStatus: SessionStatus;
   isOnline: boolean;
-  isSessionFinishedLoading: boolean;
-  session: Session | null;
   isSyncing: boolean;
 }

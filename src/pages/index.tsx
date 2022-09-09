@@ -12,21 +12,20 @@ import cuid from "cuid";
 import { useCurrentlyEditedReminder } from "../hooks/useCurrentlyEditedReminder";
 
 const Home: NextPage = () => {
-  const { isOnline, isLoading: isLoadingOnlineStatus } = useOnline();;
-  const { session, ...sessionStatus } = useCachedSession({
+  const { isOnline, isLoading: isLoadingOnlineStatus } = useOnline();
+  const sessionStatus = useCachedSession({
     isOnline,
     isLoadingOnlineStatus,
   });
   const { reminders, dispatch, isSyncing } = useCachedReminders({
     isOnline,
-    isSignedIn: sessionStatus.isFinished ? session !== null : false,
+    sessionStatus,
   });
 
   const syncStatus: SyncStatus = {
     isOnline,
     isSyncing,
-    session,
-    isSessionFinishedLoading: sessionStatus.isFinished,
+    sessionStatus,
   };
 
   const createEmptyReminder = () => {

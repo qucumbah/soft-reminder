@@ -2,28 +2,54 @@ import { useState, useEffect, useReducer } from "react";
 import { trpc } from "@/utils/trpc";
 import superjson from "superjson";
 import { useRemindersSyncQueue } from "./useRemindersSyncQueue";
+import { SessionStatus } from "./useCachedSession";
 
 export const useCachedReminders = (inputs: {
   isOnline: boolean;
-  isSignedIn: boolean;
+  sessionStatus: SessionStatus;
 }) => {
-  const { isOnline, isSignedIn } = inputs;
+  const {
+    isOnline,
+    sessionStatus: {
+      isReady: isSessionReady,
+      isFinished: isSessionLoadingFinished,
+      session,
+    },
+  } = inputs;
   const { client: trpcClient } = trpc.useContext();
 
-  const { enqueueSyncAction, isSyncing } = useRemindersSyncQueue(inputs);
+  const { enqueueSyncAction, isSyncing } = useRemindersSyncQueue({
+    canSync: isOnline && isSessionLoadingFinished && session !== null,
+  });
 
   type ResetRemindersAction = {
     type: "reset";
+    from: "cache" | "network";
     payload: Reminder[];
   };
 
-  const [reminders, dispatch] = useReducer(
+  enum RemindersStatus {
+    Uninitialized,
+    FromCache,
+    FromNetwork,
+  }
+
+  const [{ reminders, status }, dispatch] = useReducer(
     (
-      prevReminders: Reminder[],
+      prevRemindersInfo: {
+        reminders: Reminder[];
+        status: RemindersStatus;
+      },
       action: ReminderAction | ResetRemindersAction
     ) => {
       if (action.type === "reset") {
-        return action.payload;
+        return {
+          status:
+            action.from === "cache"
+              ? RemindersStatus.FromCache
+              : RemindersStatus.FromNetwork,
+          reminders: action.payload,
+        };
       }
 
       enqueueSyncAction(action);
@@ -32,39 +58,60 @@ export const useCachedReminders = (inputs: {
 
       switch (action.type) {
         case "add":
-          return [...prevReminders, actionReminder];
+          return {
+            ...prevRemindersInfo,
+            reminders: [...prevRemindersInfo.reminders, actionReminder],
+          };
         case "change":
-          return prevReminders.map((reminder) => {
-            return reminder.id === actionReminder.id
-              ? actionReminder
-              : reminder;
-          });
+          return {
+            ...prevRemindersInfo,
+            reminders: prevRemindersInfo.reminders.map((reminder) => {
+              return reminder.id === actionReminder.id
+                ? actionReminder
+                : reminder;
+            }),
+          };
         case "delete":
-          return prevReminders.filter(
-            (reminder) => reminder.id !== actionReminder.id
-          );
+          return {
+            ...prevRemindersInfo,
+            reminders: prevRemindersInfo.reminders.filter(
+              (reminder) => reminder.id !== actionReminder.id
+            ),
+          };
       }
     },
-    []
+    {
+      reminders: [],
+      status: RemindersStatus.FromCache,
+    }
   );
 
-  const [remindersStatus, setRemindersStatus] = useState<
-    "uninitialized" | "from-cache" | "from-network"
-  >("uninitialized");
-
+  /**
+   * Cache read/write
+   */
   useEffect(() => {
+    if (status === RemindersStatus.Uninitialized) {
+      return dispatch({
+        type: "reset",
+        from: "cache",
+        payload: getCachedReminders(),
+      });
+    }
+
     const saveReminders = () => saveRemindersToCache(reminders);
     window.addEventListener("beforeunload", saveReminders);
     return () => window.removeEventListener("beforeunload", saveReminders);
-  }, [reminders]);
+  }, [status, reminders]);
 
+  /**
+   * Network fetch
+   */
   useEffect(() => {
-    if (remindersStatus === "uninitialized") {
-      dispatch({ type: "reset", payload: getCachedReminders() });
-      setRemindersStatus("from-cache");
-    }
-
-    if (!isOnline || !isSignedIn || remindersStatus === "from-network") {
+    if (
+      !isOnline ||
+      !isSessionLoadingFinished ||
+      status !== RemindersStatus.FromCache
+    ) {
       return;
     }
 
@@ -74,15 +121,17 @@ export const useCachedReminders = (inputs: {
       if (ignore) {
         return;
       }
-      dispatch({ type: "reset", payload: onlineReminders });
-      saveRemindersToCache(onlineReminders);
-      setRemindersStatus("from-network");
+      dispatch({
+        type: "reset",
+        from: "network",
+        payload: onlineReminders,
+      });
     });
 
     return () => {
       ignore = true;
     };
-  }, [isOnline, isSignedIn, remindersStatus, trpcClient]);
+  }, [isOnline, isSessionLoadingFinished, status]);
 
   return {
     reminders,
@@ -101,7 +150,7 @@ const getCachedReminders = () => {
   return superjson.parse<Reminder[]>(cachedRemindersString);
 };
 
-const saveRemindersToCache = (reminders: Reminder[] | null) => {
+const saveRemindersToCache = (reminders: Reminder[]) => {
   localStorage.setItem("remindersInfo", superjson.stringify(reminders));
 };
 
