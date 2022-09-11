@@ -1,10 +1,24 @@
 import { trpc } from "@/utils/trpc";
 import { useState, useEffect, useRef } from "react";
 import type { ReminderAction } from "./useCachedReminders";
+import superjson from "superjson";
 
 export const useRemindersSyncQueue = (inputs: { canSync: boolean }) => {
   const { client: trpcClient } = trpc.useContext();
   const [syncQueue, setSyncQueue] = useState<ReminderAction[]>([]);
+
+  useEffect(() => {
+    setSyncQueue((prevSyncQueue) => [
+      ...loadCachedSyncQueue(),
+      ...prevSyncQueue,
+    ]);
+  }, []);
+
+  useEffect(() => {
+    const saveQueue = () => saveSyncQueueToCache(syncQueue);
+    window.addEventListener("beforeunload", saveQueue);
+    return () => window.removeEventListener("beforeunload", saveQueue);
+  }, [syncQueue]);
 
   /**
    * The value of whether the sync is in process has to be updated immediately.
@@ -42,7 +56,7 @@ export const useRemindersSyncQueue = (inputs: { canSync: boolean }) => {
       setSyncQueue((prevSyncQueue) => {
         return prevSyncQueue.slice(1);
       });
-
+    }).finally(() => {
       isSyncingRef.current = false;
       setIsSyncingIndicator(false);
     });
@@ -57,3 +71,17 @@ export const useRemindersSyncQueue = (inputs: { canSync: boolean }) => {
     isSyncing: isSyncingIndicator,
   };
 };
+
+const loadCachedSyncQueue = () => {
+  const cachedSyncQueueString = localStorage.getItem("syncQueueInfo");
+
+  if (cachedSyncQueueString === null) {
+    return [];
+  }
+
+  return superjson.parse<ReminderAction[]>(cachedSyncQueueString);
+};
+
+const saveSyncQueueToCache = (syncQueue: ReminderAction[]) => {
+  localStorage.setItem("syncQueueInfo", superjson.stringify(syncQueue));
+}

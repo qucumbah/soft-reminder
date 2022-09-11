@@ -1,4 +1,4 @@
-import { useState, useEffect, useReducer } from "react";
+import { useEffect, useReducer } from "react";
 import { trpc } from "@/utils/trpc";
 import superjson from "superjson";
 import { useRemindersSyncQueue } from "./useRemindersSyncQueue";
