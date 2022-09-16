@@ -1,5 +1,6 @@
 import type { Reminder } from "@/hooks/useCachedReminders";
 import * as React from "react";
+import { Checkbox } from "./Checkbox";
 
 export const ReminderComponent: React.FC<{
   reminder: Reminder;
@@ -23,28 +24,16 @@ export const ReminderComponent: React.FC<{
           props.reminder.timestamp.getMinutes()
         )}`}</span>
       </button>
-      <label className="relative w-8 h-6 pl-2">
-        <div className="relative w-6 h-6 ml-auto">
-          <input
-            type="checkbox"
-            onChange={(event) => {
-              props.changeReminder({
-                ...props.reminder,
-                enabled: event.target.checked,
-              });
-              event.stopPropagation();
-            }}
-            checked={props.reminder.enabled}
-            className={[
-              "relative appearance-none w-full h-full rounded bg-white border-2 peer cursor-pointer",
-              "transition after:transition",
-              "after:block after:absolute after:inset-0.5 after:rounded",
-              "border-gray-400 after:bg-white",
-              "checked:border-sky-500 checked:after:bg-sky-500",
-            ].join(" ")}
-          />
-          <div className="absolute w-[85%] aspect-square rounded inset-0 m-auto top-2 blur-sm bg-sky-500 -z-50 transition-opacity opacity-0 peer-checked:opacity-75"></div>
-        </div>
+      <label className="relative w-8 h-6 pl-2 cursor-pointer">
+        <Checkbox
+          onChange={(checked) => {
+            props.changeReminder({
+              ...props.reminder,
+              enabled: checked,
+            });
+          }}
+          checked={props.reminder.enabled}
+        />
       </label>
     </div>
   );

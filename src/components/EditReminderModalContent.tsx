@@ -1,5 +1,9 @@
-import { Reminder } from '@/hooks/useCachedReminders';
-import { useEffect, useState } from "react";
+import { Reminder } from "@/hooks/useCachedReminders";
+import { useElementSize } from "@/hooks/useElementSize";
+import { Transition } from "@headlessui/react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import { Checkbox } from "./Checkbox";
 import { TimeUnitPicker } from "./TimeUnitPicker";
 
 export const EditReminderModalContent: React.FC<{
@@ -7,11 +11,10 @@ export const EditReminderModalContent: React.FC<{
   onChange: (change: Partial<Reminder>) => void;
   onConfirm: () => void;
   onCancel: () => void;
-}> = (props) => {
-  const [hours, setHours] = useState(props.reminder.timestamp.getHours());
-  const [minutes, setMinutes] = useState(props.reminder.timestamp.getMinutes());
+}> = ({ reminder, onChange, onConfirm, onCancel }) => {
+  const [hours, setHours] = useState(reminder.timestamp.getHours());
+  const [minutes, setMinutes] = useState(reminder.timestamp.getMinutes());
 
-  const { onChange } = props;
   useEffect(() => {
     const timestamp = new Date();
 
@@ -23,6 +26,10 @@ export const EditReminderModalContent: React.FC<{
       timestamp,
     });
   }, [hours, minutes, onChange]);
+
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { ref: expandedMenuRef, size: expandedMenuSize } =
+    useElementSize<HTMLDivElement>();
 
   return (
     <>
@@ -39,17 +46,53 @@ export const EditReminderModalContent: React.FC<{
           setCurrentUnit={setMinutes}
         />
       </div>
-      <div className="h-8"></div>
+      <div
+        className="transition-[height] duration-200 overflow-hidden"
+        style={{
+          height: `${isExpanded ? expandedMenuSize.height : 0}px`,
+        }}
+      >
+        <div ref={expandedMenuRef}>
+          <div className="h-8" />
+          <label className="flex cursor-pointer">
+            <Checkbox
+              onChange={(checked) => {
+                onChange({
+                  enabled: checked,
+                });
+              }}
+              checked={reminder.enabled}
+            />
+            <div className="ml-2">Enabled</div>
+          </label>
+        </div>
+      </div>
+      <div className="h-8" />
+      <button
+        className="w-full h-8 relative flex justify-center items-center"
+        onClick={() => setIsExpanded((prevIsExpanded) => !prevIsExpanded)}
+      >
+        <div
+          className={[
+            "h-full w-12 relative opacity-50",
+            "transition-transform duration-200",
+            isExpanded ? "rotate-180" : "rotate-0",
+          ].join(" ")}
+        >
+          <Image priority src="/expand.svg" layout="fill" />
+        </div>
+      </button>
+      <div className="h-8" />
       <div className="flex w-full gap-8">
         <button
           className="w-full rounded-md border border-sky-500 p-2"
-          onClick={props.onConfirm}
+          onClick={onConfirm}
         >
           Confirm
         </button>
         <button
           className="w-full rounded-md border border-sky-500 p-2"
-          onClick={props.onCancel}
+          onClick={onCancel}
         >
           Cancel
         </button>
