@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getSession } from "next-auth/react";
 import { Session } from "next-auth";
 
@@ -61,11 +61,14 @@ export const useCachedSession = (inputs: {
     };
   }, [isOnline, isLoadingOnlineStatus, sessionStatus]);
 
-  return {
-    session,
-    isReady: sessionStatus !== "uninitialized",
-    isFinished,
-  };
+  return useMemo(
+    () => ({
+      session,
+      isReady: sessionStatus !== "uninitialized",
+      isFinished,
+    }),
+    [session, sessionStatus, isFinished]
+  );
 };
 
 export interface SessionStatus {

@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Modal } from "@/components/Modal";
 import { EditReminderModalContent } from "@/components/EditReminderModalContent";
 import { ReminderComponent } from "@/components/ReminderComponent";
@@ -9,7 +9,11 @@ import { LoginModalContent } from "@/components/LoginModalContent";
 import { useCachedSession } from "@/hooks/useCachedSession";
 import { useCachedReminders } from "@/hooks/useCachedReminders";
 import cuid from "cuid";
-import { useCurrentlyEditedReminder } from "../hooks/useCurrentlyEditedReminder";
+import { useCurrentlyEditedReminder } from "@/hooks/useCurrentlyEditedReminder";
+import ResolveConflictModalContent, {
+  SyncConflictResolution,
+  SyncConflictResolver,
+} from "@/components/ResolveConflictModalContent";
 
 const Home: NextPage = () => {
   const { isOnline, isLoading: isLoadingOnlineStatus } = useOnline();
@@ -17,9 +21,21 @@ const Home: NextPage = () => {
     isOnline,
     isLoadingOnlineStatus,
   });
-  const { reminders, dispatch, isSyncing } = useCachedReminders({
+
+  const [syncConflictResolver, setSyncConflictResolver] =
+    useState<SyncConflictResolver | null>(null);
+  const handleSyncConflict = useCallback(() => {
+    return new Promise<SyncConflictResolution>((resolve) => {
+      setSyncConflictResolver((resolution: SyncConflictResolution) => {
+        resolve(resolution);
+      });
+    });
+  }, []);
+
+  const { reminders, dispatchReminderAction, isSyncing } = useCachedReminders({
     isOnline,
     sessionStatus,
+    onSyncConflict: handleSyncConflict,
   });
 
   const syncStatus: SyncStatus = {
@@ -48,7 +64,7 @@ const Home: NextPage = () => {
     changeCurrentlyEditedReminder,
     confirmEdit,
     cancelEdit,
-  } = useCurrentlyEditedReminder(dispatch);
+  } = useCurrentlyEditedReminder(dispatchReminderAction);
 
   /**
    * For better visual effect, we want to keep the reminder editing UI while the modal is closing.
@@ -93,7 +109,7 @@ const Home: NextPage = () => {
                 startEditingReminder({ reminder })
               }
               changeReminder={(newReminder) =>
-                dispatch({
+                dispatchReminderAction({
                   type: "change",
                   payload: newReminder,
                 })
@@ -106,7 +122,7 @@ const Home: NextPage = () => {
           <button
             onClick={() => {
               const newReminder = createEmptyReminder();
-              dispatch({
+              dispatchReminderAction({
                 type: "add",
                 payload: newReminder,
               });
@@ -152,6 +168,11 @@ const Home: NextPage = () => {
         <LoginModalContent
           syncStatus={syncStatus}
           onClose={() => setIsLoginModalOpen(false)}
+        />
+      </Modal>
+      <Modal isOpen={syncConflictResolver !== null} onCancel={() => {}}>
+        <ResolveConflictModalContent
+          resolve={syncConflictResolver ?? (() => {})}
         />
       </Modal>
     </>
