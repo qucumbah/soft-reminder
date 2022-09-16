@@ -2,13 +2,13 @@ import "../styles/globals.css";
 import React from "react";
 import { withTRPC } from "@trpc/next";
 import { AppType } from "next/dist/shared/lib/utils";
-import type { AppRouter } from "./api/trpc/[trpc]";
+import type { AppRouter } from "@/backend/router";
 import { SessionProvider } from "next-auth/react";
 import superjson from "superjson";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
-    <SessionProvider session={pageProps.session}>
+    <SessionProvider session={pageProps.session} refetchOnWindowFocus={false}>
       <Component {...pageProps} />
     </SessionProvider>
   );

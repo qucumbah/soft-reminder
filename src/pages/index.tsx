@@ -26,9 +26,10 @@ const Home: NextPage = () => {
     useState<SyncConflictResolver | null>(null);
   const handleSyncConflict = useCallback(() => {
     return new Promise<SyncConflictResolution>((resolve) => {
-      setSyncConflictResolver((resolution: SyncConflictResolution) => {
+      const resolver = (resolution: SyncConflictResolution) => {
         resolve(resolution);
-      });
+      };
+      setSyncConflictResolver(() => resolver);
     });
   }, []);
 
@@ -36,6 +37,7 @@ const Home: NextPage = () => {
     isOnline,
     sessionStatus,
     onSyncConflict: handleSyncConflict,
+    onSyncConflictResolved: () => setSyncConflictResolver(null),
   });
 
   const syncStatus: SyncStatus = {

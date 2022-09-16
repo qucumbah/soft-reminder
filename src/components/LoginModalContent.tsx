@@ -7,7 +7,7 @@ export const LoginModalContent: React.FC<{
   onClose: () => void;
 }> = (props) => {
   const getSyncStatusMessage = () => {
-    if (!props.syncStatus.isSessionFinishedLoading) {
+    if (!props.syncStatus.sessionStatus.isFinished) {
       return "loading...";
     }
 
@@ -15,7 +15,7 @@ export const LoginModalContent: React.FC<{
       return "offline";
     }
 
-    if (!props.syncStatus.session) {
+    if (!props.syncStatus.sessionStatus.session) {
       return "not logged in";
     }
 
@@ -23,7 +23,7 @@ export const LoginModalContent: React.FC<{
   };
 
   const getSessionStatus = () => {
-    if (!props.syncStatus.session) {
+    if (!props.syncStatus.sessionStatus.session) {
       return <GitHubSignInButton disabled={!props.syncStatus.isOnline} />;
     }
 
@@ -32,7 +32,7 @@ export const LoginModalContent: React.FC<{
         <div className="w-1/2 text-center">
           <span>Signed in as</span>
           <br />
-          <span>{props.syncStatus.session.user?.name}</span>
+          <span>{props.syncStatus.sessionStatus.session.user?.name}</span>
         </div>
         <button
           className="w-1/2 rounded-md border border-sky-500 p-2"

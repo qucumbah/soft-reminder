@@ -4,7 +4,7 @@ const ResolveConflictModalContent: React.FC<{
   return (
     <>
       <div className="relative flex w-full items-stretch">
-        There is a synchronization conflict. Should we use the data from the
+        There is a synchronization conflict. Should we use data from the
         server or from the client?
       </div>
       <div className="h-8"></div>

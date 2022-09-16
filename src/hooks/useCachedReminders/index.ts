@@ -9,10 +9,12 @@ export const useCachedReminders = ({
   isOnline,
   sessionStatus,
   onSyncConflict,
+  onSyncConflictResolved,
 }: {
   isOnline: boolean;
   sessionStatus: SessionStatus;
   onSyncConflict: () => Promise<SyncConflictResolution>;
+  onSyncConflictResolved: () => void;
 }) => {
   const {
     clientReminders,
@@ -54,6 +56,7 @@ export const useCachedReminders = ({
     }
 
     setIsResolvingSyncConflict(false);
+    onSyncConflictResolved();
   }, [
     clientReminders,
     onSyncConflict,
@@ -63,6 +66,7 @@ export const useCachedReminders = ({
     serverReminders,
     setClientLastSync,
     setServerLastSync,
+    onSyncConflictResolved,
   ]);
 
   const { syncQueue, enqueueSyncAction, isSyncQueueLoading, isSyncing } =
@@ -145,7 +149,7 @@ export const useCachedReminders = ({
     reminders: clientReminders,
     dispatchReminderAction,
     isLoading: isClientInfoLoading || isServerInfoLoading,
-    isSyncing,
+    isSyncing: isSyncing || isResolvingSyncConflict,
   };
 };
 
