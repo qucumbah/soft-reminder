@@ -11,7 +11,8 @@ export const EditReminderModalContent: React.FC<{
   onChange: (change: Partial<Reminder>) => void;
   onConfirm: () => void;
   onCancel: () => void;
-}> = ({ reminder, onChange, onConfirm, onCancel }) => {
+  onDelete: () => void;
+}> = ({ reminder, onChange, onConfirm, onCancel, onDelete }) => {
   const [hours, setHours] = useState(reminder.timestamp.getHours());
   const [minutes, setMinutes] = useState(reminder.timestamp.getMinutes());
 
@@ -52,19 +53,29 @@ export const EditReminderModalContent: React.FC<{
           height: `${isExpanded ? expandedMenuSize.height : 0}px`,
         }}
       >
-        <div ref={expandedMenuRef}>
-          <div className="h-8" />
-          <label className="flex cursor-pointer">
-            <Checkbox
-              onChange={(checked) => {
-                onChange({
-                  enabled: checked,
-                });
-              }}
-              checked={reminder.enabled}
-            />
-            <div className="ml-2">Enabled</div>
+        <div ref={expandedMenuRef} className="flex flex-col gap-4 pt-8">
+          <label className="flex items-center cursor-pointer">
+            <div className="w-8 h-8 relative flex justify-center items-center">
+              <Checkbox
+                onChange={(checked) => {
+                  onChange({
+                    enabled: checked,
+                  });
+                }}
+                checked={reminder.enabled}
+              />
+            </div>
+            <span className="ml-2">Enable</span>
           </label>
+          <button
+            className="flex items-center cursor-pointer"
+            onClick={onDelete}
+          >
+            <div className="h-8 w-8 relative">
+              <Image priority src="/delete.svg" layout="fill" />
+            </div>
+            <span className="ml-2">Delete</span>
+          </button>
         </div>
       </div>
       <div className="h-8" />

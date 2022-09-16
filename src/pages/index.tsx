@@ -64,6 +64,7 @@ const Home: NextPage = () => {
     currentlyEditedReminder,
     startEditingReminder,
     changeCurrentlyEditedReminder,
+    deleteCurrentlyEditedReminder,
     confirmEdit,
     cancelEdit,
   } = useCurrentlyEditedReminder(dispatchReminderAction);
@@ -149,6 +150,7 @@ const Home: NextPage = () => {
             onChange={changeCurrentlyEditedReminder}
             onConfirm={confirmEdit}
             onCancel={cancelEdit}
+            onDelete={deleteCurrentlyEditedReminder}
           />
         ) : (
           fadingAwayReminder && (
@@ -159,6 +161,7 @@ const Home: NextPage = () => {
               onChange={() => {}}
               onConfirm={() => {}}
               onCancel={() => {}}
+              onDelete={() => {}}
             />
           )
         )}

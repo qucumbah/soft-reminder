@@ -67,10 +67,20 @@ export const useCurrentlyEditedReminder = (
     setCurrentlyEditedReminder(null);
   };
 
+  const deleteCurrentlyEditedReminder = () => {
+    dispatch({
+      type: "delete",
+      payload: currentlyEditedReminder!,
+    });
+
+    setCurrentlyEditedReminder(null);
+  };
+
   return {
     currentlyEditedReminder,
     startEditingReminder,
     changeCurrentlyEditedReminder,
+    deleteCurrentlyEditedReminder,
     confirmEdit,
     cancelEdit,
   };
