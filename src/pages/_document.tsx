@@ -16,6 +16,20 @@ const Document = () => {
         <Main />
         <NextScript />
       </body>
+      <svg>
+        <defs>
+          <mask id="mask-linear">
+            <rect width="100" height="100" fill="url(#linear-gradient)"></rect>
+            <linearGradient id="linear-gradient" x1="0" y1="0" x2="0" y2="1">
+              <stop stopColor="black" offset="0%" />
+              <stop stopColor="white" offset="100%" />
+            </linearGradient>
+          </mask>
+          <filter id="gaussian-blur-filter">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" />
+          </filter>
+        </defs>
+      </svg>
     </Html>
   );
 };

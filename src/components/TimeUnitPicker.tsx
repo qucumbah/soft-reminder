@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 
 export const TimeUnitPicker: React.FC<{
   unitsCount: number;
-  currentUnit: number;
+  initialUnit: number;
   setCurrentUnit: (newUnit: number) => void;
 }> = (props) => {
   const scrollLine = useRef<HTMLDivElement | null>(null);
@@ -39,44 +39,32 @@ export const TimeUnitPicker: React.FC<{
   };
 
   /**
-   * Calculates scroll line is going to end up on with provided movement parameters.
-   * @param scrollY current line scroll
-   * @param speedY current line speed
-   * @param deceleration deceleration that is applied to speed
-   */
-  const getFinalPosition = (
-    scrollY: number,
-    speedY: number,
-    deceleration: number
-  ) => {
-    const startSpeed = speedY;
-    const stepsUntilStop = Math.ceil(startSpeed / deceleration);
-    const finalSpeed = startSpeed - deceleration * stepsUntilStop;
-
-    const distanceLeftToTravel =
-      (stepsUntilStop * (startSpeed + finalSpeed)) / 2;
-    const finalPosition = scrollY + distanceLeftToTravel;
-
-    return finalPosition;
-  };
-
-  /**
    * Updates the position of the scroll line and updates current cell value.
    * @param newScrollY new scroll for the line.
    */
   const updateScrollLinePosition = (newScrollY: number) => {
+    const oldScrollY = scrollY.current;
     scrollY.current = newScrollY;
 
-    props.setCurrentUnit(
-      Math.min(Math.max(getClosestCell(newScrollY), 0), props.unitsCount - 1)
+    scrollLine.current!.style.transform = `translateY(${-newScrollY}px)`;
+
+    const oldCurrentUnit = Math.min(
+      Math.max(getClosestCell(oldScrollY), 0),
+      props.unitsCount - 1
+    );
+    const newCurrentUnit = Math.min(
+      Math.max(getClosestCell(newScrollY), 0),
+      props.unitsCount - 1
     );
 
-    scrollLine.current!.style.transform = `translateY(${-newScrollY}px)`;
+    if (oldCurrentUnit !== newCurrentUnit) {
+      props.setCurrentUnit(newCurrentUnit);
+    }
   };
 
   // This effect will only run on initial mount, and shouldn't depend on any further changes to props.currentUnit
   React.useLayoutEffect(
-    () => updateScrollLinePosition(getCellPosition(props.currentUnit)),
+    () => updateScrollLinePosition(getCellPosition(props.initialUnit)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
@@ -99,10 +87,8 @@ export const TimeUnitPicker: React.FC<{
       // There are two speed change handlers: friction handler and push back handler.
       // If the line is too high or too low, the push back handler is used to push it back.
       // When the line is sure to reach the first in-bounds cell, pass control to the friction handler.
-      // Friction handler applies constant deceleration on each step and makes a small correction
-      // so that the line comes to the full stop directly at the middle of closest projected cell.
-      const friction = 0.1;
-      const deceleration = Math.sign(speedY.current) * friction;
+      // Friction handler applies constant deceleration on each step and makes a correction so that
+      // the line comes to the full stop directly at the middle of closest projected cell.
 
       // Highest allowed scroll is when the first element is in the middle
       // To acheive this, scroll has to be at negative-first element
@@ -115,7 +101,7 @@ export const TimeUnitPicker: React.FC<{
 
       if (outOfBoundsHigh || outOfBoundsLow) {
         // Push back handler.
-        // Current expected speed is pointed towards inside of boundaries
+        // Current expected speed is pointed towards inside of boundaries.
         // Calculate expected speed on how far away from boundary the offset is.
         // Accelerate toward the expected speed when slowing down,
         // use the expected speed when speeding back to the first in-bounds cell.
@@ -128,48 +114,62 @@ export const TimeUnitPicker: React.FC<{
         const currentSpeed = speedY.current;
 
         // If current speed vector is directed away from boundary
-        if (Math.sign(currentSpeed) != Math.sign(vectorToBoundary)) {
+        if (Math.sign(currentSpeed) !== Math.sign(vectorToBoundary)) {
           // Slow down
           speedY.current += (expectedSpeed - currentSpeed) * 0.1;
         } else {
           speedY.current = expectedSpeed;
         }
       } else {
-        // Friction handler with correction:
-        // 1. Apply a constant deceleration at each step.
-        // 2. Apply correction so that when the line comes to the full stop some cell is directly in the middle.
-        // Stop animation if speed is close enough to zero
-        if (Math.abs(speedY.current) < friction) {
-          return;
-        }
-
+        // Friction handler.
+        // Apply friction, calculate the stopping point.
+        // If it's not in the middle of the cell, push towards it.
+        const friction = 0.1;
+        const deceleration = Math.sign(speedY.current) * friction;
         speedY.current -= deceleration;
 
-        if (Math.abs(speedY.current) > friction) {
-          const startSpeed = speedY.current;
-          const stepsUntilStop = Math.ceil(startSpeed / deceleration);
-          const finalSpeed = startSpeed - deceleration * stepsUntilStop;
+        const startSpeed = speedY.current;
+        const stepsUntilStop = Math.floor(startSpeed / deceleration);
+        const finalSpeed = startSpeed - deceleration * stepsUntilStop;
 
-          const distanceLeftToTravel =
-            (stepsUntilStop * (startSpeed + finalSpeed)) / 2;
-          const finalPosition = scrollY.current + distanceLeftToTravel;
+        // Arithmetic progression sum
+        const distanceLeftToTravel =
+          ((startSpeed + finalSpeed) / 2) * stepsUntilStop;
+        const finalPosition = scrollY.current + distanceLeftToTravel;
+        const finalCell = getClosestCell(finalPosition);
+        const finalCellCenterPosition = getCellPosition(finalCell);
 
-          const finalCell = getClosestCell(
-            getFinalPosition(scrollY.current, speedY.current, deceleration)
-          );
-          const finalCellCenterPosition = getCellPosition(finalCell);
+        // If the final position is not close enough to the middle of the cell,
+        // push the scrollbar to the right speed so that it makes it there.
+        if (Math.abs(finalPosition - finalCellCenterPosition) > friction) {
+          // We've got a certain distance to cover.
+          const distanceDiff = finalCellCenterPosition - scrollY.current;
 
-          const difference = finalCellCenterPosition - finalPosition;
-          speedY.current += difference / stepsUntilStop;
+          // We need to pick a speed at which, considering constant deceleration
+          // due to friction, we'll end up somewhere close to the cell center.
+          // Consider that the number of steps is continuos, and that the end speed is 0.
+          // Then, using the arithmetic progression sum:
+          // startSpeed / 2 * steps = distanceDiff
+          // steps = startSpeed / friction
+          // startSpeed / 2 * startSpeed / friction = distanceDiff
+          // startSpeed = sqrt(2 * distanceDiff * friction)
+          // This is an approximation because we assumed that the number of steps
+          // is continuous and that the final speed is zero, but this is close
+          // enough that after a few iterations we're very close to the middle.
+          const newStartSpeed =
+            Math.sign(distanceDiff) *
+            Math.sqrt(2 * Math.abs(distanceDiff) * friction);
+
+          speedY.current = newStartSpeed;
         }
       }
     }
 
-    if (speedY.current === 0 && !isDragging.current) {
+    updateScrollLinePosition(scrollY.current + speedY.current);
+
+    if (Math.abs(speedY.current) < 0.1 && !isDragging.current) {
       return;
     }
-
-    updateScrollLinePosition(scrollY.current + speedY.current);
 
     requestAnimationFrame(animate);
   };
@@ -207,7 +207,7 @@ export const TimeUnitPicker: React.FC<{
       event.preventDefault();
       event.stopImmediatePropagation();
       stopDrag();
-    }
+    };
 
     window.addEventListener("touchmove", handleTouchMove);
     window.addEventListener("mousemove", handleMouseMove);
