@@ -2,7 +2,7 @@ import { Reminder } from "@/hooks/useCachedReminders";
 import { useElementSize } from "@/hooks/useElementSize";
 import { Transition } from "@headlessui/react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Checkbox } from "./Checkbox";
 import { TimeUnitPicker } from "./TimeUnitPicker";
 
@@ -13,8 +13,11 @@ export const EditReminderModalContent: React.FC<{
   onCancel: () => void;
   onDelete: () => void;
 }> = ({ reminder, onChange, onConfirm, onCancel, onDelete }) => {
-  const [hours, setHours] = useState(reminder.timestamp.getHours());
-  const [minutes, setMinutes] = useState(reminder.timestamp.getMinutes());
+  const [initialHours] = useState(reminder.timestamp.getHours());
+  const [initialMinutes] = useState(reminder.timestamp.getMinutes());
+
+  const [hours, setHours] = useState(initialHours);
+  const [minutes, setMinutes] = useState(initialMinutes);
 
   useEffect(() => {
     const timestamp = new Date();
@@ -32,20 +35,33 @@ export const EditReminderModalContent: React.FC<{
   const { ref: expandedMenuRef, size: expandedMenuSize } =
     useElementSize<HTMLDivElement>();
 
+  const hourPicker = useMemo(
+    () => (
+      <TimeUnitPicker
+        unitsCount={24}
+        initialUnit={initialHours}
+        setCurrentUnit={setHours}
+      />
+    ),
+    [initialHours]
+  );
+  const minutePicker = useMemo(
+    () => (
+      <TimeUnitPicker
+        unitsCount={60}
+        initialUnit={initialMinutes}
+        setCurrentUnit={setMinutes}
+      />
+    ),
+    [initialMinutes]
+  );
+
   return (
     <>
       <div className="relative flex w-full items-stretch">
-        <TimeUnitPicker
-          unitsCount={24}
-          currentUnit={hours}
-          setCurrentUnit={setHours}
-        />
-        <div className="absolute h-full w-px bg-gray-400 inset-0 m-auto"></div>
-        <TimeUnitPicker
-          unitsCount={60}
-          currentUnit={minutes}
-          setCurrentUnit={setMinutes}
-        />
+        {hourPicker}
+        <div className="absolute h-full w-px bg-gray-400 inset-0 m-auto" />
+        {minutePicker}
       </div>
       <div
         className="transition-[height] duration-200 overflow-hidden"
