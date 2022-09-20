@@ -2,8 +2,13 @@ import type { Reminder } from "@/hooks/useCachedReminders";
 
 const timerIds: number[] = [];
 
-const handleRemindersChange = (event: RemindersChangeEvent) => {
+const handleRemindersChange = (event: WorkerStateChangeMessage) => {
   timerIds.forEach((timerId) => clearTimeout(timerId));
+  timerIds.length = 0;
+
+  if (!event.notificationsAllowed) {
+    return;
+  }
 
   for (const reminder of event.reminders) {
     if (!reminder.enabled) {
@@ -22,7 +27,7 @@ const scheduleNotification = (reminder: Reminder) => {
 
 const showNotification = (reminder: Reminder) => {
   new Notification(`Reminder: ${reminder.timestamp.toLocaleTimeString()}`);
-  const message: NotificationShownEvent = {
+  const message: NotificationShownMessage = {
     reminder: reminder,
   };
   self.postMessage(message);
@@ -30,15 +35,16 @@ const showNotification = (reminder: Reminder) => {
 
 self.addEventListener(
   "message",
-  (event: MessageEvent<RemindersChangeEvent>) => {
+  (event: MessageEvent<WorkerStateChangeMessage>) => {
     handleRemindersChange(event.data);
   }
 );
 
-export interface RemindersChangeEvent {
+export interface WorkerStateChangeMessage {
   reminders: Reminder[];
+  notificationsAllowed: boolean;
 }
 
-export interface NotificationShownEvent {
+export interface NotificationShownMessage {
   reminder: Reminder;
 }

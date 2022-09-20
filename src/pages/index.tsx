@@ -15,6 +15,8 @@ import ResolveConflictModalContent, {
   SyncConflictResolver,
 } from "@/components/ResolveConflictModalContent";
 import { useNotificationsWorker } from "@/hooks/useNotificationsWorker";
+import NotificationsPermissionIndicator from "@/components/NotificationsPermissionIndicator";
+import { useNotificationsPermission } from "@/hooks/useNotificationsPermission";
 
 const Home: NextPage = () => {
   const { isOnline, isLoading: isLoadingOnlineStatus } = useOnline();
@@ -41,9 +43,12 @@ const Home: NextPage = () => {
     onSyncConflictResolved: () => setSyncConflictResolver(null),
   });
 
+  const notificationsPermission = useNotificationsPermission();
+
   useNotificationsWorker({
     reminders,
     dispatchReminderAction,
+    notificationsPermission,
   });
 
   const syncStatus: SyncStatus = {
@@ -102,7 +107,32 @@ const Home: NextPage = () => {
             onClick={() => setIsLoginModalOpen(true)}
           >
             <SyncIndicator syncStatus={syncStatus} />
-            <div className="absolute w-[85%] aspect-square rounded-lg inset-0 m-auto top-2 left-1 blur-sm bg-sky-500 opacity-50 -z-50" />
+            <div
+              className={[
+                "absolute w-[85%] aspect-square rounded-lg inset-0",
+                "m-auto top-2 left-1 blur-sm -z-50 transition-all",
+                syncStatus.isOnline && syncStatus.sessionStatus.session !== null
+                  ? "bg-sky-500 opacity-50"
+                  : "bg-yellow-500 opacity-100",
+              ].join(" ")}
+            />
+          </button>
+          <button
+            className="relative w-10 aspect-square bg-white border border-slate-200 rounded-lg"
+            onClick={() => Notification.requestPermission()}
+          >
+            <NotificationsPermissionIndicator
+              permission={notificationsPermission}
+            />
+            <div
+              className={[
+                "absolute w-[85%] aspect-square rounded-lg inset-0",
+                "m-auto top-2 left-1 blur-sm -z-50 transition-all",
+                notificationsPermission === "granted"
+                  ? "bg-sky-500 opacity-50"
+                  : "bg-yellow-500 opacity-100",
+              ].join(" ")}
+            />
           </button>
         </header>
         <main className="px-6 pt-14 pb-24 flex flex-col max-w-xl mx-auto">

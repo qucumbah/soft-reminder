@@ -1,13 +1,15 @@
-import { NotificationShownEvent, RemindersChangeEvent } from "@/utils/worker";
+import { NotificationShownMessage, WorkerStateChangeMessage } from "@/utils/worker";
 import { useEffect, useState } from "react";
 import { Reminder, ReminderAction } from "./useCachedReminders";
 
 export const useNotificationsWorker = ({
   reminders,
   dispatchReminderAction,
+  notificationsPermission,
 }: {
   reminders: Reminder[];
   dispatchReminderAction: (action: ReminderAction) => void;
+  notificationsPermission: PermissionState;
 }) => {
   const [worker, setWorker] = useState<Worker | null>(null);
 
@@ -27,7 +29,7 @@ export const useNotificationsWorker = ({
       return;
     }
 
-    worker.onmessage = (event: MessageEvent<NotificationShownEvent>) => {
+    worker.onmessage = (event: MessageEvent<NotificationShownMessage>) => {
       dispatchReminderAction({
         type: "change",
         payload: {
@@ -43,10 +45,11 @@ export const useNotificationsWorker = ({
       return;
     }
 
-    const message: RemindersChangeEvent = {
+    const message: WorkerStateChangeMessage = {
       reminders,
+      notificationsAllowed: notificationsPermission === "granted",
     };
 
     worker.postMessage(message);
-  }, [reminders]);
+  }, [reminders, notificationsPermission]);
 };
