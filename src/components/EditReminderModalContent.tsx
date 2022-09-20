@@ -1,8 +1,7 @@
 import { Reminder } from "@/hooks/useCachedReminders";
 import { useElementSize } from "@/hooks/useElementSize";
-import { Transition } from "@headlessui/react";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Checkbox } from "./Checkbox";
 import { TimeUnitPicker } from "./TimeUnitPicker";
 

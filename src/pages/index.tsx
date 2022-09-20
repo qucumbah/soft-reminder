@@ -14,6 +14,7 @@ import ResolveConflictModalContent, {
   SyncConflictResolution,
   SyncConflictResolver,
 } from "@/components/ResolveConflictModalContent";
+import { useNotificationsWorker } from "@/hooks/useNotificationsWorker";
 
 const Home: NextPage = () => {
   const { isOnline, isLoading: isLoadingOnlineStatus } = useOnline();
@@ -38,6 +39,11 @@ const Home: NextPage = () => {
     sessionStatus,
     onSyncConflict: handleSyncConflict,
     onSyncConflictResolved: () => setSyncConflictResolver(null),
+  });
+
+  useNotificationsWorker({
+    reminders,
+    dispatchReminderAction,
   });
 
   const syncStatus: SyncStatus = {
@@ -102,7 +108,7 @@ const Home: NextPage = () => {
         <main className="px-6 pt-14 pb-24 flex flex-col max-w-xl mx-auto">
           {reminders.map((reminder) => (
             <ReminderComponent
-              // When we're currently editing this reminder, show the preview instead of the actual reminder.
+              // If we're currently editing this reminder, show the preview instead of the actual reminder.
               reminder={
                 reminder.id === currentlyEditedReminder?.id
                   ? currentlyEditedReminder

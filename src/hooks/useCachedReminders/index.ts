@@ -1,4 +1,5 @@
 import { SyncConflictResolution } from "@/components/ResolveConflictModalContent";
+import { makeDateFuture } from "@/utils/timeUtil";
 import { useCallback, useEffect, useState } from "react";
 import { SessionStatus } from "../useCachedSession";
 import { useClientInfo } from "./useClientInfo";
@@ -138,6 +139,8 @@ export const useCachedReminders = ({
       if (isResolvingSyncConflict) {
         return;
       }
+
+      action.payload.timestamp = makeDateFuture(action.payload.timestamp);
 
       dispatchClientReminderAction(action);
       enqueueSyncAction(action);
