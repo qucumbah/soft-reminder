@@ -129,7 +129,7 @@ export const TimeUnitPicker: React.FC<{
         speedY.current -= deceleration;
 
         const startSpeed = speedY.current;
-        const stepsUntilStop = Math.floor(startSpeed / deceleration);
+        const stepsUntilStop = speedY.current === 0 ? 0 : Math.floor(startSpeed / deceleration);
         const finalSpeed = startSpeed - deceleration * stepsUntilStop;
 
         // Arithmetic progression sum
