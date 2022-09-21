@@ -77,6 +77,7 @@ export const EditReminderModalContent: React.FC<{
                     enabled: checked,
                   });
                 }}
+                ariaLabel="Toggle reminder"
                 checked={reminder.enabled}
               />
             </div>
@@ -84,10 +85,11 @@ export const EditReminderModalContent: React.FC<{
           </label>
           <button
             className="flex items-center cursor-pointer"
+            aria-label="Delete reminder"
             onClick={onDelete}
           >
             <div className="h-8 w-8 relative">
-              <Image priority src="/delete.svg" layout="fill" />
+              <Image priority alt="" src="/delete.svg" layout="fill" />
             </div>
             <span className="ml-2">Delete</span>
           </button>
@@ -105,7 +107,7 @@ export const EditReminderModalContent: React.FC<{
             isExpanded ? "rotate-180" : "rotate-0",
           ].join(" ")}
         >
-          <Image priority src="/expand.svg" layout="fill" />
+          <Image priority alt="" src="/expand.svg" layout="fill" />
         </div>
       </button>
       <div className="h-8" />

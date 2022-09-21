@@ -104,6 +104,7 @@ const Home: NextPage = () => {
         <header className="gap-2 fixed w-full bg-white h-14 px-6 flex justify-center items-center z-10">
           <button
             className="relative w-10 aspect-square bg-white border border-slate-200 rounded-lg"
+            aria-label="Synchronization status"
             onClick={() => setIsLoginModalOpen(true)}
           >
             <SyncIndicator syncStatus={syncStatus} />
@@ -119,6 +120,7 @@ const Home: NextPage = () => {
           </button>
           <button
             className="relative w-10 aspect-square bg-white border border-slate-200 rounded-lg"
+            aria-label="Enable notifications"
             onClick={() => Notification.requestPermission()}
           >
             <NotificationsPermissionIndicator
@@ -167,6 +169,7 @@ const Home: NextPage = () => {
               });
               startEditingReminder({ reminder: newReminder, isNew: true });
             }}
+            aria-label="Add reminder"
             className="w-14 aspect-square bg-white border border-slate-200 rounded-full absolute inset-0 m-auto pointer-events-auto"
           >
             <div className="absolute w-5 h-[2px] rounded bg-sky-500 inset-0 m-auto" />

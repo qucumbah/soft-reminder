@@ -5,10 +5,14 @@ import { AppType } from "next/dist/shared/lib/utils";
 import type { AppRouter } from "@/backend/router";
 import { SessionProvider } from "next-auth/react";
 import superjson from "superjson";
+import Head from "next/head";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <SessionProvider session={pageProps.session} refetchOnWindowFocus={false}>
+      <Head>
+        <title>Soft Reminder</title>
+      </Head>
       <Component {...pageProps} />
     </SessionProvider>
   );

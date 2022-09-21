@@ -18,13 +18,13 @@ export const ReminderComponent: React.FC<{
         <span
           className={[
             "text-3xl transition-colors duration-150 ease",
-            props.reminder.enabled ? "text-black" : "text-gray-400",
+            props.reminder.enabled ? "text-black" : "text-gray-500",
           ].join(" ")}
         >{`${padTime(props.reminder.timestamp.getHours())}:${padTime(
           props.reminder.timestamp.getMinutes()
         )}`}</span>
       </button>
-      <label className="relative w-8 h-6 pl-2 cursor-pointer">
+      <div className="relative w-8 h-6 pl-2 cursor-pointer">
         <Checkbox
           onChange={(checked) => {
             props.changeReminder({
@@ -33,8 +33,9 @@ export const ReminderComponent: React.FC<{
             });
           }}
           checked={props.reminder.enabled}
+          ariaLabel={"Toggle reminder"}
         />
-      </label>
+      </div>
     </div>
   );
 };

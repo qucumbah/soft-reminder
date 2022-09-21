@@ -51,5 +51,5 @@ export const useNotificationsWorker = ({
     };
 
     worker.postMessage(message);
-  }, [reminders, notificationsPermission]);
+  }, [worker, reminders, notificationsPermission]);
 };

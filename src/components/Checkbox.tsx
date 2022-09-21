@@ -1,12 +1,12 @@
-import { ChangeEventHandler } from "react";
-
 export const Checkbox: React.FC<{
   checked: boolean;
   onChange: (checked: boolean) => void;
-}> = ({ checked, onChange }) => {
+  ariaLabel: string;
+}> = ({ checked, onChange, ariaLabel }) => {
   return (
-    <div className="relative w-6 h-6">
+    <label className="relative w-6 h-6">
       <input
+        aria-label={ariaLabel}
         type="checkbox"
         onChange={(event) => {
           onChange(event.target.checked);
@@ -28,6 +28,6 @@ export const Checkbox: React.FC<{
           "transition-opacity opacity-0 peer-checked:opacity-75",
         ].join(" ")}
       ></div>
-    </div>
+    </label>
   );
 };
