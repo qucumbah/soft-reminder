@@ -1,34 +1,44 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Soft Reminder
 
-## Getting Started
+## About
 
-First, run the development server:
+<p style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+  <img src="https://user-images.githubusercontent.com/39967396/191544464-82d3524f-704a-48bd-b086-0952ab660d78.png" />
+  <img src="https://user-images.githubusercontent.com/39967396/191544375-6e575cde-ec2e-4c65-9f91-cbc99e4c28d4.png" />
+</p>
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+This is an alarm-like app that creates notifications at specified times.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Check it out
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+[The app is available on Vercel](https://soft-reminder.vercel.app/).
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## Details
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+### PWA
 
-## Learn More
+Soft Reminder is a PWA, so it will work if installed locally.
 
-To learn more about Next.js, take a look at the following resources:
+If the user is online, reminders will be synchronized with other devices.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+If the user is offline, reminders will still work, and will be synchronized once the connection is restored.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+### Authorization
 
-## Deploy on Vercel
+You may use this app without authorization, but all the reminders will remain local and won't be synchronized.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Authorization is provided via GitHub OAuth.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Limitations
+
+Since [notification triggers API](https://bugs.chromium.org/p/chromium/issues/detail?id=891339) development is no longer pursued, there is no way to reliably create notifications in PWA unless the page is open.
+
+So, the app has to be open at all times in order for notifications to work.
+
+## More screenshots
+
+<p style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+  <img src="https://user-images.githubusercontent.com/39967396/191546306-6d4d7ebb-b7c6-442c-a200-424be5ed011b.png" />
+  <img src="https://user-images.githubusercontent.com/39967396/191544485-81b9e24c-6efa-4f6e-91eb-c5e3fa0836d7.png" />
+  <img src="https://user-images.githubusercontent.com/39967396/191684687-0ea0c3b3-39a0-44e3-a9fb-f441bb2226ee.png" style="grid-column: span 2;" />
+</p>
