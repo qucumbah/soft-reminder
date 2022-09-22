@@ -50,15 +50,15 @@ export const useClientReminders = () => {
   }, [isLoading]);
 
   /**
-   * Save client reminders to localStorage on exit
+   * Save client reminders to localStorage on change
    */
   useEffect(() => {
-    const save = () => {
-      saveClientReminders(reminders);
-    };
-    window.addEventListener("beforeunload", save);
-    return () => window.removeEventListener("beforeunload", save);
-  }, [reminders]);
+    if (isLoading) {
+      return;
+    }
+
+    saveClientReminders(reminders);
+  }, [isLoading, reminders]);
 
   return {
     reminders,

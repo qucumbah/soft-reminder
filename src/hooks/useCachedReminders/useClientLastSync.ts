@@ -18,15 +18,15 @@ export const useClientLastSync = () => {
   }, [isLoading]);
 
   /**
-   * Save client last sync to localStorage on exit
+   * Save client last sync to localStorage on change
    */
   useEffect(() => {
-    const save = () => {
-      saveClientLastSync(lastSync);
-    };
-    window.addEventListener("beforeunload", save);
-    return () => window.removeEventListener("beforeunload", save);
-  }, [lastSync]);
+    if (isLoading) {
+      return;
+    }
+
+    saveClientLastSync(lastSync);
+  }, [isLoading, lastSync]);
 
   return {
     lastSync,

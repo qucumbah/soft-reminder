@@ -31,15 +31,15 @@ export const useSyncQueue = ({
   }, []);
 
   /**
-   * Save client sync queue to localStorage on exit
+   * Save client sync queue to localStorage on change
    */
   useEffect(() => {
-    const save = () => {
-      saveClientSyncQueue(syncQueue);
-    };
-    window.addEventListener("beforeunload", save);
-    return () => window.removeEventListener("beforeunload", save);
-  }, [syncQueue]);
+    if (isSyncQueueLoading) {
+      return;
+    }
+
+    saveClientSyncQueue(syncQueue);
+  }, [isSyncQueueLoading, syncQueue]);
 
   /**
    * The value of whether the sync is in process has to be updated immediately.
