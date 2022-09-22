@@ -1,7 +1,5 @@
 # Soft Reminder
 
-## About
-
 <table>
   <tr>
     <td>
