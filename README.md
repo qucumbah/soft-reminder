@@ -2,10 +2,16 @@
 
 ## About
 
-<p style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-  <img src="https://user-images.githubusercontent.com/39967396/191544464-82d3524f-704a-48bd-b086-0952ab660d78.png" />
-  <img src="https://user-images.githubusercontent.com/39967396/191544375-6e575cde-ec2e-4c65-9f91-cbc99e4c28d4.png" />
-</p>
+<table>
+  <tr>
+    <td>
+      <img src="https://user-images.githubusercontent.com/39967396/191544464-82d3524f-704a-48bd-b086-0952ab660d78.png" />
+    </td>
+    <td>
+      <img src="https://user-images.githubusercontent.com/39967396/191544375-6e575cde-ec2e-4c65-9f91-cbc99e4c28d4.png" />
+    </td>
+  </tr>
+</table>
 
 This is an alarm-like app that creates notifications at specified times.
 
@@ -37,8 +43,18 @@ So, the app has to be open at all times in order for notifications to work.
 
 ## More screenshots
 
-<p style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-  <img src="https://user-images.githubusercontent.com/39967396/191546306-6d4d7ebb-b7c6-442c-a200-424be5ed011b.png" />
-  <img src="https://user-images.githubusercontent.com/39967396/191544485-81b9e24c-6efa-4f6e-91eb-c5e3fa0836d7.png" />
-  <img src="https://user-images.githubusercontent.com/39967396/191684687-0ea0c3b3-39a0-44e3-a9fb-f441bb2226ee.png" style="grid-column: span 2;" />
-</p>
+<table>
+  <tr>
+    <td>
+      <img src="https://user-images.githubusercontent.com/39967396/191546306-6d4d7ebb-b7c6-442c-a200-424be5ed011b.png" />
+    </td>
+    <td>
+      <img src="https://user-images.githubusercontent.com/39967396/191544485-81b9e24c-6efa-4f6e-91eb-c5e3fa0836d7.png" />
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <img src="https://user-images.githubusercontent.com/39967396/191684687-0ea0c3b3-39a0-44e3-a9fb-f441bb2226ee.png" />
+    </td>
+  </tr>
+</table>
